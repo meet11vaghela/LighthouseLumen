@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lighthouse Luxury | Targets Dashboard</title>
+<style>
+  :root {
+    --ink: #1f1a19;
+    --muted: #5d5250;
+    --bg: #fbf6f4;
+    --panel: #ffffff;
+    --line: #eadcd7;
+    --accent: #b8321f;
+    --accent-dark: #8f2314;
+    --ok: #1b7a43;
+    --warn: #8a5a00;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Ubuntu", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.4;
+  }
+  header.top {
+    background: linear-gradient(135deg, #3b1510, #7a2216);
+    color: #fff;
+    padding: 24px 32px 20px;
+  }
+  header.top h1 { margin: 0 0 4px; font-size: 1.5rem; letter-spacing: .04em; }
+  header.top p { margin: 0; color: #f4d9d3; font-size: .92rem; max-width: 900px; }
+  main { max-width: 1280px; margin: 0 auto; padding: 20px 24px 48px; }
+
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+  .kpi .l { font-size: .78rem; color: var(--muted); }
+  .kpi .v { font-size: 1.35rem; font-weight: 700; margin-top: 2px; }
+  .kpi .s { font-size: .78rem; color: var(--muted); margin-top: 2px; }
+
+  [role="tablist"] { display: flex; flex-wrap: wrap; gap: 6px; border-bottom: 2px solid var(--line); margin-bottom: 18px; }
+  [role="tab"] {
+    font: inherit; font-weight: 600; font-size: .92rem;
+    background: transparent; border: 0; border-bottom: 3px solid transparent;
+    padding: 10px 16px; margin-bottom: -2px; cursor: pointer; color: var(--muted);
+  }
+  [role="tab"][aria-selected="true"] { color: var(--accent-dark); border-bottom-color: var(--accent); }
+  [role="tab"]:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid #1a5fd0; outline-offset: 2px; }
+  [role="tabpanel"][hidden] { display: none; }
+
+  h2.sec { font-size: 1.1rem; margin: 22px 0 4px; }
+  p.hint { margin: 0 0 12px; color: var(--muted); font-size: .86rem; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 18px; }
+  .card { border-radius: 18px; padding: 16px; border: 1px solid rgba(0,0,0,.08); }
+  .card.t0 { background: #ffd3c7; }
+  .card.t1 { background: #ffe0b8; }
+  .card.t2 { background: #d9e8c9; }
+  .card.t3 { background: #cfe2f0; }
+  .card .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 10px; }
+  .card .name { font-size: 1.1rem; font-weight: 700; }
+  .card .sub { font-size: .78rem; color: #4a3f3c; }
+  .pill { background: #fff; border-radius: 8px; padding: 6px 12px; font-size: .78rem; font-weight: 600; white-space: nowrap; }
+  .box { background: rgba(255,255,255,.55); border-radius: 12px; padding: 4px 14px; margin-bottom: 10px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; column-gap: 26px; }
+  .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,.1); font-size: .84rem; min-height: 56px; }
+  .row .lab { color: #3b3331; }
+  .row .val { font-weight: 700; white-space: nowrap; text-align: right; }
+  .row input {
+    width: 54px; font: inherit; font-weight: 700; text-align: right;
+    border: 1px solid rgba(0,0,0,.25); border-radius: 6px; padding: 2px 4px; background: #fff;
+  }
+  .totals { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tot { background: rgba(255,255,255,.55); border-radius: 12px; padding: 10px 14px; }
+  .tot .tl { font-size: .78rem; color: #3b3331; }
+  .tot .tv { font-size: 1.45rem; font-weight: 700; }
+  .tot .tv small { font-size: .78rem; font-weight: 400; color: #3b3331; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .chip { background: rgba(255,255,255,.7); border-radius: 999px; padding: 3px 10px; font-size: .74rem; font-weight: 600; }
+  .bar { height: 6px; background: rgba(255,255,255,.7); border-radius: 3px; margin-top: 6px; overflow: hidden; }
+  .bar > i { display: block; height: 100%; background: var(--accent); width: 0; }
+
+  .tablewrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
+  table { border-collapse: collapse; width: 100%; font-size: .84rem; }
+  caption { text-align: left; padding: 12px 14px; font-weight: 700; }
+  th, td { padding: 8px 12px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  thead th { background: #f6e6e1; position: sticky; top: 0; }
+  tfoot td, tr.total td { font-weight: 700; background: #fbefeb; }
+  .grp th { text-align: center; background: #efd3cb; }
+  td.wrap, th.wrap { white-space: normal; text-align: left; }
+
+  .note { background: #fff6e0; border: 1px solid #f0d58a; color: var(--warn); border-radius: 10px; padding: 10px 14px; font-size: .84rem; margin: 12px 0; }
+  .rules { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 18px 12px 34px; font-size: .86rem; }
+  .actions { display: flex; gap: 10px; align-items: center; margin: 4px 0 14px; flex-wrap: wrap; }
+  button.btn { font: inherit; font-size: .84rem; font-weight: 600; background: #fff; border: 1px solid var(--accent); color: var(--accent-dark); border-radius: 8px; padding: 6px 14px; cursor: pointer; }
+  button.btn:hover { background: #fbe9e5; }
+  @media (max-width: 480px) { .cards { grid-template-columns: 1fr; } .grid2 { column-gap: 14px; } main { padding: 14px 12px 40px; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>LIGHTHOUSE LUXURY | TARGETS DASHBOARD</h1>
+  <p>Project-wise sales &amp; lead targets from Lighthouse_MVT_Project_Targets.xlsx. Channel mix: WhatsApp 10%, ConvoAI 30%, Digital 60% (Meta 60% / Website 40% of Digital).</p>
+</header>
+
+<main>
+  <section class="kpis" id="kpis" aria-label="Overall totals"></section>
+
+  <div role="tablist" aria-label="Dashboard sections" id="tabs">
+    <button role="tab" id="tab-dash" aria-controls="panel-dash" aria-selected="true">Dashboard (cards)</button>
+    <button role="tab" id="tab-proj" aria-controls="panel-proj" aria-selected="false" tabindex="-1">Project Targets</button>
+    <button role="tab" id="tab-s1" aria-controls="panel-s1" aria-selected="false" tabindex="-1">Sheet1</button>
+    <button role="tab" id="tab-assume" aria-controls="panel-assume" aria-selected="false" tabindex="-1">Assumptions &amp; Economics</button>
+    <button role="tab" id="tab-sm" aria-controls="panel-sm" aria-selected="false" tabindex="-1">SM Summary</button>
+  </div>
+
+  <div role="tabpanel" id="panel-dash" aria-labelledby="tab-dash">
+    <div class="actions">
+      <button class="btn" id="resetBtn" type="button">Reset achieved values</button>
+      <span class="hint" style="margin:0">The xlsx has targets only. Enter achieved values in the project cards; they are saved in this browser and rolled up into the Sourcing Manager cards.</span>
+    </div>
+    <h2 class="sec">Sourcing Managers</h2>
+    <p class="hint">Achieved values are the sum of that manager's project cards.</p>
+    <div class="cards" id="smCards"></div>
+    <h2 class="sec">Projects / Retail locations</h2>
+    <p class="hint">Edit the achieved figure in each box. Revenue achieved is calculated at 2% of achieved sales value.</p>
+    <div class="cards" id="projCards"></div>
+  </div>
+
+  <div role="tabpanel" id="panel-proj" aria-labelledby="tab-proj" hidden>
+    <div class="tablewrap" id="projTable"></div>
+    <h2 class="sec">Target tracking rules</h2>
+    <ol class="rules">
+      <li>Sales Value = Sales Units Target × Approximate Ticket Size.</li>
+      <li>Revenue Target is calculated at 2% of sales value, as specified in MVT.xlsx.</li>
+      <li>Lead channel mix is standardized to WhatsApp 10%, ConvoAI 30%, and Digital 60% of qualified leads. Digital is split 60% Meta and 40% Website.</li>
+      <li>Walk-in reference split and qualified-lead requirements are retained from MVT.xlsx. Rounded channel targets may vary by one lead due to rounding.</li>
+      <li>Use this as the target baseline; enter actuals monthly in a separate performance tracker to measure achievement.</li>
+    </ol>
+  </div>
+
+  <div role="tabpanel" id="panel-s1" aria-labelledby="tab-s1" hidden>
+    <div class="tablewrap" id="s1Table"></div>
+  </div>
+
+  <div role="tabpanel" id="panel-assume" aria-labelledby="tab-assume" hidden>
+    <div class="tablewrap" id="assumeTable"></div>
+  </div>
+
+  <div role="tabpanel" id="panel-sm" aria-labelledby="tab-sm" hidden>
+    <div class="note" role="note">The source sheet lists Mohit D at ₹145 Cr sales value and ₹2.9 Cr revenue. Versova (₹100 Cr) + Juhu (₹60 Cr) is ₹160 Cr and ₹3.2 Cr, so this view recomputes from the project rows. The sheet's SM totals (₹825 Cr / ₹16.5 Cr) therefore differ from the ₹840 Cr / ₹16.8 Cr shown here.</div>
+    <div class="tablewrap" id="smTable"></div>
+  </div>
+</main>
+
+<script>
+/* ---------- Source data (Project Targets sheet) ---------- */
+const PROJECTS = [
+  // name, sm, units, ticket(₹), walkins, selfGen, allocated, qualified, whatsapp, convo, digital, meta, website
+  ["Khar Santa",  "Varun J",  6, 150000000,  40,  8, 32, 160, 16, 48,  96, 58, 38],
+  ["Bandra West", "Varun J",  6, 150000000,  40,  8, 32, 160, 16, 48,  96, 58, 38],
+  ["Bandra Bay",  "Dheeraj",  8, 250000000,  53, 11, 43, 213, 21, 64, 128, 77, 51],
+  ["Worli",       "Dhara",    4, 250000000,  27,  5, 21, 107, 11, 32,  64, 38, 26],
+  ["Lower Parel", "Dhara",    4, 250000000,  27,  5, 21, 107, 11, 32,  64, 38, 26],
+  ["SOBO",        "Dhara",    4, 250000000,  27,  5, 21, 107, 11, 32,  64, 38, 26],
+  ["Versova",     "Mohit D",  5, 200000000,  33,  7, 27, 133, 13, 40,  80, 48, 32],
+  ["Juhu",        "Mohit D",  4, 150000000,  27,  5, 21, 107, 11, 32,  64, 38, 26],
+].map(r => ({
+  name: r[0], sm: r[1], units: r[2], ticket: r[3], walkins: r[4], selfGen: r[5], alloc: r[6],
+  qualified: r[7], wa: r[8], convo: r[9], digital: r[10], meta: r[11], web: r[12],
+  sales: r[2] * r[3], revenue: r[2] * r[3] * 0.02
+}));
+const SM_ORDER = ["Varun J", "Dheeraj", "Dhara", "Mohit D"];
+const CR = 1e7;
+const REV_RATE = 0.02;
+
+/* ---------- Helpers ---------- */
+const sum = (arr, k) => arr.reduce((a, p) => a + p[k], 0);
+const inr = n => Number(n).toLocaleString("en-IN");
+const cr = n => { const v = n / CR; return (Math.round(v * 100) / 100).toString(); };
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const $ = id => document.getElementById(id);
+
+function aggregate(list) {
+  const o = { units: 0, sales: 0, revenue: 0, walkins: 0, selfGen: 0, alloc: 0, qualified: 0, wa: 0, convo: 0, digital: 0, meta: 0, web: 0 };
+  list.forEach(p => Object.keys(o).forEach(k => { o[k] += p[k]; }));
+  return o;
+}
+const TOTAL = aggregate(PROJECTS);
+const smList = SM_ORDER.map(name => {
+  const ps = PROJECTS.filter(p => p.sm === name);
+  return { name, projects: ps, ...aggregate(ps) };
+});
+
+/* ---------- Achieved state (saved in this browser only) ---------- */
+const STORE_KEY = "lighthouse_targets_achieved_v1";
+const FIELDS = ["units", "salesCr", "walkins", "selfGen", "alloc"];
+let achieved = {};
+try { achieved = JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch (e) { achieved = {}; }
+const getA = (proj, f) => Number((achieved[proj] || {})[f]) || 0;
+function setA(proj, f, v) {
+  achieved[proj] = achieved[proj] || {};
+  achieved[proj][f] = v;
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(achieved)); } catch (e) { /* storage unavailable */ }
+}
+function achievedFor(projects) {
+  const o = { units: 0, salesCr: 0, walkins: 0, selfGen: 0, alloc: 0 };
+  projects.forEach(p => FIELDS.forEach(f => { o[f] += getA(p.name, f); }));
+  o.revenueCr = o.salesCr * REV_RATE;
+  return o;
+}
+
+/* ---------- Card component ---------- */
+const fmt1 = n => (Math.round(n * 100) / 100).toString();
+
+function cardHTML(opts) {
+  // opts: id, title, sub, badge, tint, t (target agg), a (achieved), editable, channels
+  const t = opts.t, a = opts.a, id = opts.id;
+  const cell = (field, targetText, value) => {
+    const inner = opts.editable
+      ? `<input type="number" min="0" step="${field === "salesCr" ? "0.1" : "1"}" value="${value}" data-proj="${esc(id)}" data-field="${field}" aria-label="${esc(opts.title)} achieved ${field}"> / ${targetText}`
+      : `<span data-k="${field}">${fmt1(value)}</span> / ${targetText}`;
+    return inner;
+  };
+  const row = (label, field, targetText, value, extraAttr) =>
+    `<div class="row"><span class="lab">${label}</span><span class="val" ${extraAttr || ""}>${cell(field, targetText, value)}</span></div>`;
+  const revRow = `<div class="row"><span class="lab">Revenue Target @ 2%:</span><span class="val"><span data-k="revenueCr">${fmt1(a.revenueCr)}</span> / ${cr(t.revenue)} Cr</span></div>`;
+  const chips = opts.channels ? `<div class="chips" aria-label="Qualified lead targets by channel">
+      <span class="chip">Qualified ${inr(t.qualified)}</span><span class="chip">WhatsApp ${inr(t.wa)}</span>
+      <span class="chip">ConvoAI ${inr(t.convo)}</span><span class="chip">Digital ${inr(t.digital)}</span>
+      <span class="chip">Meta ${inr(t.meta)}</span><span class="chip">Website ${inr(t.web)}</span></div>` : "";
+  const pct = t.sales ? Math.min(100, (a.salesCr * CR / t.sales) * 100) : 0;
+  return `<article class="card t${opts.tint}" data-card="${esc(id)}" aria-label="${esc(opts.title)} targets">
+    <div class="head"><div><div class="name">${esc(opts.title)}</div><div class="sub">${esc(opts.sub)}</div></div><span class="pill">${esc(opts.badge)}</span></div>
+    <div class="box"><div class="grid2">
+      <div>
+        ${row("Sales Units Target:", "units", t.units, a.units)}
+        ${revRow}
+        ${row("Self-Generated / Reference Leads (20%):", "selfGen", t.selfGen, a.selfGen)}
+      </div>
+      <div>
+        ${row("Total Sales Value:", "salesCr", cr(t.sales) + " Cr", a.salesCr)}
+        ${row("Walk-ins Target:", "walkins", t.walkins, a.walkins)}
+        ${row("Allocated Walk-in Leads (80%):", "alloc", t.alloc, a.alloc)}
+      </div>
+    </div></div>
+    <div class="totals">
+      <div class="tot"><div class="tl">Total target</div><div class="tv">${cr(t.sales)} Cr <small>(${t.units} units)</small></div></div>
+      <div class="tot"><div class="tl">Achieved target</div><div class="tv"><span data-k="totSales">${fmt1(a.salesCr)}</span> Cr <small>(<span data-k="totUnits">${fmt1(a.units)}</span> units)</small></div>
+        <div class="bar" role="progressbar" aria-label="Sales value achieved" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(pct)}"><i style="width:${pct}%"></i></div></div>
+    </div>
+    ${chips}
+  </article>`;
+}
+
+function renderSMCards() {
+  $("smCards").innerHTML = smList.map((s, i) => cardHTML({
+    id: "sm-" + s.name, title: s.name, sub: s.projects.map(p => p.name).join(", "),
+    badge: "Sourcing Manager", tint: i % 4, t: s, a: achievedFor(s.projects), editable: false, channels: true
+  })).join("");
+}
+function renderProjectCards() {
+  $("projCards").innerHTML = PROJECTS.map((p, i) => cardHTML({
+    id: p.name, title: p.name, sub: "SM: " + p.sm + " · Ticket ₹" + cr(p.ticket) + " Cr",
+    badge: "Project", tint: SM_ORDER.indexOf(p.sm) % 4, t: p, a: achievedFor([p]), editable: true, channels: true
+  })).join("");
+}
+
+function updateProjectCard(name) {
+  const p = PROJECTS.find(x => x.name === name);
+  const a = achievedFor([p]);
+  const card = document.querySelector(`[data-card="${CSS.escape(name)}"]`);
+  if (!card) return;
+  card.querySelector('[data-k="revenueCr"]').textContent = fmt1(a.revenueCr);
+  card.querySelector('[data-k="totSales"]').textContent = fmt1(a.salesCr);
+  card.querySelector('[data-k="totUnits"]').textContent = fmt1(a.units);
+  const pct = Math.min(100, (a.salesCr * CR / p.sales) * 100);
+  const bar = card.querySelector(".bar");
+  bar.setAttribute("aria-valuenow", Math.round(pct));
+  bar.firstElementChild.style.width = pct + "%";
+}
+
+/* ---------- KPIs ---------- */
+function renderKPIs() {
+  const a = achievedFor(PROJECTS);
+  const k = (l, v, s) => `<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s}</div></div>`;
+  $("kpis").innerHTML = [
+    k("Sales units target", TOTAL.units, `Achieved: ${fmt1(a.units)}`),
+    k("Sales value target", "₹" + cr(TOTAL.sales) + " Cr", `Achieved: ₹${fmt1(a.salesCr)} Cr`),
+    k("Revenue target @ 2%", "₹" + cr(TOTAL.revenue) + " Cr", `Achieved: ₹${fmt1(a.revenueCr)} Cr`),
+    k("Walk-ins target", inr(TOTAL.walkins), `Achieved: ${fmt1(a.walkins)}`),
+    k("Qualified leads required", inr(TOTAL.qualified), "Across 8 locations")
+  ].join("");
+}
+
+/* ---------- Tables ---------- */
+function projectTable() {
+  const head = `<tr class="grp"><th scope="col"></th><th scope="colgroup" colspan="5">Sales &amp; revenue targets</th><th scope="colgroup" colspan="4">Walk-in &amp; lead targets</th><th scope="colgroup" colspan="5">Lead allocation by channel</th></tr>
+  <tr><th scope="col">Project / Retail Location</th><th scope="col">Sourcing Manager (SM)</th><th scope="col">Sales Units Target</th><th scope="col">Approx. Ticket Size (₹)</th><th scope="col">Total Sales Value (₹)</th><th scope="col">Revenue Target @ 2% (₹)</th>
+  <th scope="col">Walk-ins Target</th><th scope="col">Self-Generated / Reference Leads (20%)</th><th scope="col">Allocated Walk-in Leads (80%)</th><th scope="col">Qualified Leads Required</th>
+  <th scope="col">WhatsApp (10%)</th><th scope="col">ConvoAI (30%)</th><th scope="col">Digital (60%)</th><th scope="col">Meta (60% of Digital)</th><th scope="col">Website (40% of Digital)</th></tr>`;
+  const body = PROJECTS.map(p => `<tr><th scope="row" style="text-align:left;font-weight:600">${esc(p.name)}</th><td style="text-align:left">${esc(p.sm)}</td><td>${p.units}</td><td>${inr(p.ticket)}</td><td>${inr(p.sales)}</td><td>${inr(p.revenue)}</td><td>${p.walkins}</td><td>${p.selfGen}</td><td>${p.alloc}</td><td>${p.qualified}</td><td>${p.wa}</td><td>${p.convo}</td><td>${p.digital}</td><td>${p.meta}</td><td>${p.web}</td></tr>`).join("");
+  const foot = `<tr class="total"><td>TOTAL</td><td></td><td>${TOTAL.units}</td><td title="Weighted average (sales value ÷ units); the source sheet adds up ticket sizes">Avg ${inr(Math.round(TOTAL.sales / TOTAL.units))}</td><td>${inr(TOTAL.sales)}</td><td>${inr(TOTAL.revenue)}</td><td>${TOTAL.walkins}</td><td>${TOTAL.selfGen}</td><td>${TOTAL.alloc}</td><td>${inr(TOTAL.qualified)}</td><td>${TOTAL.wa}</td><td>${TOTAL.convo}</td><td>${TOTAL.digital}</td><td>${TOTAL.meta}</td><td>${TOTAL.web}</td></tr>`;
+  return `<table><caption>Project-wise sales &amp; lead targets</caption><thead>${head}</thead><tbody>${body}</tbody><tfoot>${foot}</tfoot></table>`;
+}
+
+function sheet1Table() {
+  const rows = [
+    ["Sourcing Manager (SM)", p => esc(p.sm), ""],
+    ["Sales Units Target", p => p.units, TOTAL.units],
+    ["Approx. Ticket Size (₹)", p => inr(p.ticket), "Avg " + inr(Math.round(TOTAL.sales / TOTAL.units))],
+    ["Total Sales Value (₹)", p => inr(p.sales), inr(TOTAL.sales)],
+    ["Revenue Target @ 2% (₹)", p => inr(p.revenue), inr(TOTAL.revenue)],
+    ["Walk-ins Target", p => p.walkins, TOTAL.walkins],
+    ["Self-Generated / Reference Leads (20%)", p => p.selfGen, TOTAL.selfGen],
+    ["Allocated Walk-in Leads (80%)", p => p.alloc, TOTAL.alloc],
+    ["Qualified Leads Required", p => p.qualified, inr(TOTAL.qualified)],
+    ["WhatsApp Leads (10%)", p => p.wa, TOTAL.wa],
+    ["ConvoAI Leads (30%)", p => p.convo, TOTAL.convo],
+    ["Digital Leads (60%)", p => p.digital, TOTAL.digital],
+    ["Meta Leads (60% of Digital)", p => p.meta, TOTAL.meta],
+    ["Website Leads (40% of Digital)", p => p.web, TOTAL.web]
+  ];
+  const head = `<tr><th scope="col">Project / Retail Location</th>${PROJECTS.map(p => `<th scope="col">${esc(p.name)}</th>`).join("")}<th scope="col">TOTAL</th></tr>`;
+  const body = rows.map(r => `<tr><th scope="row" style="text-align:left;font-weight:600">${r[0]}</th>${PROJECTS.map(p => `<td>${r[1](p)}</td>`).join("")}<td><b>${r[2]}</b></td></tr>`).join("");
+  return `<table><caption>Targets by project (transposed view)</caption><thead>${head}</thead><tbody>${body}</tbody></table>`;
+}
+
+function assumptionsTable() {
+  const rows = [
+    ["Sales units target", TOTAL.units, "MVT.xlsx", "Total target units across all listed markets"],
+    ["Sales value target (₹)", inr(TOTAL.sales), "Calculated", "Sum of project-wise sales values"],
+    ["Revenue target @ 2% (₹)", inr(TOTAL.revenue), "MVT.xlsx", "Gross target revenue before taxes, sharing or adjustments"],
+    ["Walk-ins target", TOTAL.walkins, "MVT.xlsx", "Sum of project-wise walk-in targets"],
+    ["Qualified leads required", inr(TOTAL.qualified), "MVT.xlsx", "Sum of project-wise qualified lead targets"],
+    ["WhatsApp leads target", TOTAL.wa, "10% mix", "Rounded at project level"],
+    ["ConvoAI leads target", TOTAL.convo, "30% mix", "Rounded at project level"],
+    ["Digital leads target", TOTAL.digital, "60% mix", "Digital is residual after WhatsApp and ConvoAI to preserve lead total"],
+    ["Meta leads target", TOTAL.meta, "60% of Digital", "Rounded at project level"],
+    ["Website leads target", TOTAL.web, "40% of Digital", "Website is residual after Meta to preserve digital total"],
+    ["Average ticket size (₹)", "See project-wise ticket sizes", "MVT.xlsx", "Approximate project ticket sizes vary from ₹15 crore to ₹25 crore"]
+  ];
+  return `<table><caption>Target assumptions &amp; unit economics</caption><thead><tr><th scope="col">Metric</th><th scope="col">Target / Assumption</th><th scope="col" class="wrap">Basis</th><th scope="col" class="wrap">Notes</th></tr></thead><tbody>${
+    rows.map(r => `<tr><th scope="row" style="text-align:left;font-weight:600">${r[0]}</th><td>${r[1]}</td><td class="wrap">${r[2]}</td><td class="wrap">${r[3]}</td></tr>`).join("")}</tbody></table>`;
+}
+
+function smTable() {
+  const body = smList.map(s => `<tr><th scope="row" style="text-align:left;font-weight:600">${esc(s.name)}</th><td class="wrap">${s.projects.map(p => esc(p.name)).join(", ")}</td><td>${s.units}</td><td>${inr(s.sales)}</td><td>${inr(s.revenue)}</td><td>${s.walkins}</td><td>${s.qualified}</td></tr>`).join("");
+  return `<table><caption>Sourcing manager target summary</caption><thead><tr><th scope="col">Sourcing Manager</th><th scope="col" class="wrap">Projects / Markets</th><th scope="col">Sales Units Target</th><th scope="col">Sales Value Target (₹)</th><th scope="col">Revenue Target @ 2% (₹)</th><th scope="col">Walk-ins Target</th><th scope="col">Qualified Leads Target</th></tr></thead><tbody>${body}</tbody><tfoot><tr><td>TOTAL</td><td></td><td>${TOTAL.units}</td><td>${inr(TOTAL.sales)}</td><td>${inr(TOTAL.revenue)}</td><td>${TOTAL.walkins}</td><td>${inr(TOTAL.qualified)}</td></tr></tfoot></table>`;
+}
+
+/* ---------- Wiring ---------- */
+function renderAll() {
+  renderKPIs();
+  renderSMCards();
+  renderProjectCards();
+}
+renderAll();
+$("projTable").innerHTML = projectTable();
+$("s1Table").innerHTML = sheet1Table();
+$("assumeTable").innerHTML = assumptionsTable();
+$("smTable").innerHTML = smTable();
+
+$("projCards").addEventListener("input", e => {
+  const el = e.target;
+  if (!el.matches("input[data-proj]")) return;
+  const v = Math.max(0, parseFloat(el.value) || 0);
+  setA(el.dataset.proj, el.dataset.field, v);
+  updateProjectCard(el.dataset.proj);
+  renderKPIs();
+  renderSMCards();
+});
+
+$("resetBtn").addEventListener("click", () => {
+  if (!confirm("Clear all achieved values saved in this browser?")) return;
+  achieved = {};
+  try { localStorage.removeItem(STORE_KEY); } catch (e) { /* ignore */ }
+  renderAll();
+});
+
+/* Tabs with arrow-key navigation */
+const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
+function selectTab(tab) {
+  tabs.forEach(t => {
+    const on = t === tab;
+    t.setAttribute("aria-selected", on);
+    t.tabIndex = on ? 0 : -1;
+    $(t.getAttribute("aria-controls")).hidden = !on;
+  });
+  tab.focus();
+}
+tabs.forEach((t, i) => {
+  t.addEventListener("click", () => selectTab(t));
+  t.addEventListener("keydown", e => {
+    let n = null;
+    if (e.key === "ArrowRight") n = tabs[(i + 1) % tabs.length];
+    if (e.key === "ArrowLeft") n = tabs[(i - 1 + tabs.length) % tabs.length];
+    if (e.key === "Home") n = tabs[0];
+    if (e.key === "End") n = tabs[tabs.length - 1];
+    if (n) { e.preventDefault(); selectTab(n); }
+  });
+});
+</script>
+</body>
+</html>
