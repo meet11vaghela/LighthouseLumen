@@ -47,7 +47,7 @@
   header.topbar { background: var(--panel); border-bottom: 1px solid var(--line); padding: 14px 24px; display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 5; }
   header.topbar h1 { margin: 0; font-size: 1.15rem; }
   header.topbar .sub { font-size: .75rem; color: var(--muted); }
-  .periodbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .periodbar { display: flex; flex-wrap: nowrap; gap: 8px; align-items: flex-end; }
   .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
   .seg button { background: var(--panel); border: 0; padding: 8px 14px; cursor: pointer; font-weight: 600; font-size: .82rem; border-right: 1px solid var(--line); }
   .seg button:last-child { border-right: 0; }
@@ -55,7 +55,7 @@
   select, input[type="number"], input[type="date"], input[type="text"] { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-height: 38px; }
   label.fl { display: block; font-size: .74rem; color: var(--muted); font-weight: 600; margin-bottom: 4px; }
 
-  .content { padding: 20px 24px 60px; max-width: 1400px; width: 100%; }
+  .content { padding: 20px 24px 60px; width: 100%; }
   .view[hidden] { display: none; }
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; box-shadow: var(--shadow); margin-bottom: 18px; }
   .panel h2 { margin: 0 0 4px; font-size: 1rem; }
@@ -85,7 +85,7 @@
   html.dark .tabs button[aria-pressed="true"] { background: var(--primary); color: #121212; border-color: var(--primary); }
 
   /* Target cards (same layout as the provided screenshot) */
-  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 18px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 18px; }
   .card { border-radius: 20px; padding: 16px; }
   .card.t0 { background: var(--c0); } .card.t1 { background: var(--c1); } .card.t2 { background: var(--c2); } .card.t3 { background: var(--c3); }
   .card .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 10px; }
@@ -136,10 +136,31 @@
   .tree { font-size: .82rem; }
   .tree ul { list-style: none; margin: 4px 0 4px 14px; padding-left: 12px; border-left: 2px solid var(--c0); }
   .tree li { margin: 3px 0; }
-  .setgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px 16px; }
+  .setgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px 16px; }
   .setgrid input, .setgrid select { width: 100%; }
   #toast { position: fixed; right: 20px; bottom: 20px; background: #121212; color: #fff; border-left: 4px solid var(--primary); padding: 12px 18px; border-radius: 10px; opacity: 0; pointer-events: none; transition: opacity .2s; max-width: 360px; z-index: 20; }
   #toast.show { opacity: 1; }
+
+  /* ── Role Switcher ── */
+  .role-switch { display: flex; flex-direction: column; gap: 4px; padding: 0 4px 14px; border-bottom: 1px solid #2b2b2b; margin-bottom: 6px; }
+  .role-switch .rs-label { font-size: .62rem; letter-spacing: .22em; color: #888; padding: 0 8px 4px; font-weight: 700; text-transform: uppercase; }
+  .role-switch button { text-align: left; background: transparent; border: 0; color: var(--side-ink); padding: 9px 12px; border-radius: 10px; cursor: pointer; font-weight: 500; font-size: .83rem; display: flex; align-items: center; gap: 8px; transition: background .15s; }
+  .role-switch button:hover { background: #242424; }
+  .role-switch button.active { background: #2a2a2a; color: var(--primary); font-weight: 700; }
+  .role-switch button .rs-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; background: #555; }
+  .role-switch button.active .rs-dot { background: var(--primary); }
+
+  /* ── Presales Digital card ── */
+  .card.ps-digital .row { min-height: 54px; }
+
+  /* ── Presales Executive card ── */
+  .ps-pills { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+  .ps-pills button { background: var(--inner); border: 1px solid rgba(128,128,128,.25); border-radius: 999px; padding: 5px 14px; font-size: .78rem; font-weight: 600; cursor: pointer; color: var(--ink); transition: background .15s; }
+  .ps-pills button.active { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
+  .card.ps-exec .row { min-height: 52px; }
+
+  /* ── Role indicator in topbar ── */
+  .role-badge { font-size: .72rem; font-weight: 700; background: var(--c1); color: var(--ink); padding: 4px 12px; border-radius: 999px; border: 1px solid var(--line); white-space: nowrap; }
 
   @media (max-width: 900px) {
     .app { grid-template-columns: 1fr; }
@@ -156,25 +177,43 @@
   <aside class="side">
     <div class="brand"><b>LIGHTHOUSE</b><span>LUXURY</span></div>
     <button class="btn-theme" id="themeBtn" type="button" aria-pressed="false">Dark mode</button>
+    <!-- Role Switcher -->
+    <div class="role-switch" id="roleSwitcher">
+      <div class="rs-label">Dashboard Profile</div>
+      <button type="button" class="active" data-role="saleshead" id="role-saleshead">
+        <span class="rs-dot"></span>Sales Head
+      </button>
+      <button type="button" data-role="presales-digital" id="role-presales-digital">
+        <span class="rs-dot"></span>Presales &ndash; Digital
+      </button>
+      <button type="button" data-role="presales-exec" id="role-presales-exec">
+        <span class="rs-dot"></span>Presales Executive
+      </button>
+    </div>
     <nav class="nav" aria-label="Target module">
       <button type="button" data-view="overview" aria-current="page">Target Overview</button>
-      <button type="button" data-view="set">Set Target</button>
-      <button type="button" data-view="team">Team Allocation</button>
+      <button type="button" data-view="set" data-roles="saleshead">Set Target</button>
+      <button type="button" data-view="team" data-roles="saleshead">Team Allocation</button>
       <button type="button" data-view="settings">Rules &amp; Settings</button>
     </nav>
   </aside>
 
   <div class="main">
     <header class="topbar">
-      <div><h1 id="viewTitle">Target Overview</h1><div class="sub" id="viewSub"></div></div>
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:nowrap">
+          <h1 id="viewTitle">Target Overview</h1>
+          <span class="role-badge" id="roleBadge">Sales Head</span>
+        </div>
+        <div class="sub" id="viewSub"></div>
+      </div>
       <div class="periodbar" id="periodBar">
         <div><label class="fl" for="pickYear">Year</label><select id="pickYear"></select></div>
         <div>
           <span class="fl" id="lblLevel">Show target for</span>
           <div class="seg" role="group" aria-labelledby="lblLevel" id="levelSeg">
-            <button type="button" data-level="day" aria-pressed="false">Day</button>
-            <button type="button" data-level="week" aria-pressed="false">Week</button>
             <button type="button" data-level="month" aria-pressed="true">Month</button>
+            <button type="button" data-level="quarter" aria-pressed="false">Quarter</button>
             <button type="button" data-level="year" aria-pressed="false">Year</button>
           </div>
         </div>
@@ -186,9 +225,9 @@
       <!-- ================= OVERVIEW ================= -->
       <section class="view" id="view-overview" aria-labelledby="viewTitle">
         <div class="kpis" id="kpis" aria-label="Company totals for the selected period"></div>
-        <div class="panel"><h2>Lead funnel for this period</h2><p class="hint" id="funnelHint"></p><div class="funnel" id="funnel"></div><div class="chips" id="chanChips"></div></div>
+        <div class="panel"><h2>Expected lead funnel</h2><p class="hint" id="funnelHint"></p><div class="funnel" id="funnel"></div><div class="chips" id="chanChips"></div></div>
         <div class="tabs" role="group" aria-label="Group targets by" id="ovTabs">
-          <button type="button" data-tab="sm" aria-pressed="true">Sourcing Managers</button>
+          <button type="button" data-tab="sm" aria-pressed="true">Sales Heads</button>
           <button type="button" data-tab="project" aria-pressed="false">Projects</button>
           <button type="button" data-tab="emp" aria-pressed="false">Employees</button>
         </div>
@@ -204,7 +243,7 @@
             <p class="hint">Enter the target once at any level. Every other period (day, week, month, year) is converted automatically.</p>
             <div class="fields">
               <div><label class="fl" for="fScope">Set target for</label>
-                <select id="fScope"><option value="project">A project</option><option value="sm">A sourcing manager (split across projects)</option><option value="company">Whole company (split across projects)</option></select></div>
+                <select id="fScope"><option value="project">A project</option><option value="sm">A sales head (split across projects)</option><option value="company">Whole company (split across projects)</option></select></div>
               <div id="fTargetWrap"><label class="fl" for="fTarget">Project</label><select id="fTarget"></select></div>
               <div class="full">
                 <span class="fl" id="fLvlLbl">Period</span>
@@ -246,10 +285,10 @@
       <section class="view" id="view-team" hidden aria-labelledby="viewTitle">
         <div class="formgrid" style="grid-template-columns: minmax(0,2fr) minmax(260px,1fr)">
           <div class="panel">
-            <h2>Split a sourcing manager's target across the team</h2>
+            <h2>Split a sales head's target across the team</h2>
             <p class="hint">Shares are stored as percentages, so the same split applies to any day, week, month or year.</p>
             <div class="fields" style="grid-template-columns: 1fr 2fr; align-items:end; margin-bottom:12px">
-              <div><label class="fl" for="tSm">Sourcing manager</label><select id="tSm"></select></div>
+              <div><label class="fl" for="tSm">Sales head</label><select id="tSm"></select></div>
               <div>
                 <span class="fl" id="tModeLbl">Split by</span>
                 <div class="seg" role="group" aria-labelledby="tModeLbl" id="tMode">
@@ -268,7 +307,7 @@
           </div>
           <div class="panel">
             <h2>Hierarchy</h2>
-            <p class="hint">Company → Sourcing manager → Projects, with the team that shares the manager's target.</p>
+            <p class="hint">Company → Sales head → Projects, with the team that shares the head's target.</p>
             <div class="tree" id="tree"></div>
           </div>
         </div>
@@ -289,6 +328,11 @@
           <h2>Project ticket sizes &amp; managers</h2>
           <p class="hint">Sales value = units × ticket size.</p>
           <div class="tablewrap" id="projSet"></div>
+        </div>
+        <div class="panel">
+          <h2>Presales Executive – Weekly Activity Targets</h2>
+          <p class="hint">These weekly targets auto-scale to daily, monthly, quarterly, or annual in the Presales Executive dashboard.</p>
+          <div class="setgrid" id="psexecSet"></div>
         </div>
         <div class="panel">
           <button type="button" class="btn danger" id="resetAll">Reset demo to spreadsheet values</button>
@@ -336,7 +380,7 @@ function freshState() {
   });
   SM_LIST.forEach((sm, i) => {
     S.team[sm] = [
-      { id: "m" + (S.nextId++), name: sm, role: "Sourcing Manager", pct: 40 },
+      { id: "m" + (S.nextId++), name: sm, role: "Sales Head", pct: 40 },
       { id: "m" + (S.nextId++), name: sm + " · Executive 1", role: "Sales Executive", pct: 30 },
       { id: "m" + (S.nextId++), name: sm + " · Executive 2", role: "Sales Executive", pct: 30 }
     ];
@@ -354,8 +398,8 @@ function persist() { VER++; try { localStorage.setItem(STORE, JSON.stringify(S))
    DATE HELPERS (UTC, midnight timestamps)
    ====================================================================== */
 const DAY = 864e5;
-const LV = { day: 0, week: 1, month: 2, year: 3 };
-const LV_NAME = { day: "Day", week: "Week", month: "Month", year: "Year" };
+const LV = { day: 0, week: 1, month: 2, quarter: 3, year: 4 };
+const LV_NAME = { day: "Day", week: "Week", month: "Month", quarter: "Quarter", year: "Year" };
 const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const fromIso = s => Date.parse(s + "T00:00:00Z");
 const isoOf = t => new Date(t).toISOString().slice(0, 10);
@@ -377,6 +421,7 @@ function weightSum(a, b) { let w = 0; for (let t = a; t <= b; t += DAY) w += wei
 function rangeOf(e) {
   if (e.level === "year") return yearRange(e.fy);
   const s = fromIso(e.start);
+  if (e.level === "quarter") { const d = new Date(s); return { start: s, end: Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 3, 1) - DAY }; }
   if (e.level === "month") { const d = new Date(s); return { start: s, end: Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1) - DAY }; }
   if (e.level === "week") return { start: s, end: s + 6 * DAY };
   return { start: s, end: s };
@@ -446,6 +491,16 @@ function periodsOf(level) {
   if (cache.periods[level]) return cache.periods[level];
   const yr = yearRange(S.settings.fyYear), out = [];
   if (level === "year") out.push({ level, idx: 0, start: yr.start, end: yr.end, fullStart: yr.start, fullEnd: yr.end, label: yearLabel(S.settings.fyYear) });
+  else if (level === "quarter") {
+    const d0 = new Date(yr.start), y0 = d0.getUTCFullYear(), m0 = d0.getUTCMonth();
+    for (let i = 0; i < 4; i++) {
+      const qs = Date.UTC(y0, m0 + i * 3, 1), qe = Date.UTC(y0, m0 + i * 3 + 3, 1) - DAY;
+      if (qs > yr.end) break;
+      const sd = new Date(Math.max(qs, yr.start)), ed = new Date(Math.min(qe, yr.end));
+      out.push({ level, idx: i, start: Math.max(qs, yr.start), end: Math.min(qe, yr.end), fullStart: qs, fullEnd: qe,
+        label: `Q${i + 1} · ${MON[sd.getUTCMonth()]}–${MON[ed.getUTCMonth()]} ${ed.getUTCFullYear()}` });
+    }
+  }
   else if (level === "month") {
     let d = new Date(yr.start), y = d.getUTCFullYear(), m = d.getUTCMonth(), idx = 0;
     for (;;) {
@@ -549,7 +604,7 @@ function toast(msg) { const t = $("toast"); t.textContent = msg; t.classList.add
 /* ======================================================================
    GLOBAL VIEW STATE
    ====================================================================== */
-const view = { screen: "overview", level: "month", idx: 0, ovTab: "sm", teamSm: SM_LIST[0], teamMode: "percent" };
+const view = { screen: "overview", level: "month", idx: 0, ovTab: "sm", teamSm: SM_LIST[0], teamMode: "percent", role: "saleshead", psExecLevel: "week" };
 function todayMs() { const n = new Date(); return Date.UTC(n.getFullYear(), n.getMonth(), n.getDate()); }
 function defaultIdx(level) {
   const list = periodsOf(level), t = todayMs();
@@ -558,6 +613,32 @@ function defaultIdx(level) {
 }
 view.idx = defaultIdx(view.level);
 const curPeriod = () => periodsOf(view.level)[view.idx] || periodsOf(view.level)[0];
+
+/* ======================================================================
+   PRESALES DEFAULTS
+   ====================================================================== */
+const DEFAULT_PS_EXEC = { weekCallsMade: 1200, weekCallsConnected: 300, weekWarmLeads: 30, weekSiteVisits: 4 };
+const STORE_PSEXEC = "lighthouse_psexec_v1";
+try { if (!S.psExec) S.psExec = JSON.parse(localStorage.getItem(STORE_PSEXEC) || "null"); } catch(e) {}
+if (!S.psExec || typeof S.psExec !== 'object') S.psExec = { ...DEFAULT_PS_EXEC };
+S.psExec = { ...DEFAULT_PS_EXEC, ...S.psExec };
+function persistPsExec() { try { localStorage.setItem(STORE_PSEXEC, JSON.stringify(S.psExec)); } catch(e) {} }
+
+/* Scale weekly presales-exec targets to a period */
+function psExecTargets(p) {
+  const days = (p.end - p.start) / DAY + 1;
+  const f = days / 7;
+  const e = S.psExec;
+  return {
+    callsMade: e.weekCallsMade * f,
+    callsConnected: e.weekCallsConnected * f,
+    warmLeads: e.weekWarmLeads * f,
+    siteVisits: e.weekSiteVisits * f
+  };
+}
+
+const PS_EXEC_LEVELS = ["day", "week", "month", "quarter", "year"];
+const PS_EXEC_LEVEL_NAMES = { day: "Daily", week: "Weekly", month: "Monthly", quarter: "Quarterly", year: "Annual" };
 
 /* ======================================================================
    TARGET CARD (layout from the screenshot)
@@ -590,10 +671,175 @@ function cardHTML(o) {
 }
 
 /* ======================================================================
+   PRESALES – DIGITAL CARD
+   ====================================================================== */
+function presalesDigitalCardHTML(o, T) {
+  const s = S.settings;
+  // proportion of leads from ConvoAI + WhatsApp
+  const psLeads = T.wa + T.convo;
+  const ratio   = T.leads > 0 ? psLeads / T.leads : 0;
+  const psUnits  = T.units  * ratio;
+  const psSales  = T.sales  * ratio;
+  const psRev    = psSales  * s.revRate / 100;
+  const row = (lab, val) =>
+    `<div class="row"><span class="lab">${lab}</span><span class="val">${val}</span></div>`;
+  return `<article class="card t${o.tint} ps-digital" aria-label="Presales Digital target – ${esc(o.title)}">
+    <div class="head">
+      <div><div class="name">${esc(o.title)}</div><div class="sub2">${esc(o.sub)}</div></div>
+      <span class="pill">Presales</span>
+    </div>
+    <div class="box"><div class="grid2">
+      <div>
+        ${row("Sales Target thru Convo &amp; WhatsApp:", num(psUnits))}
+        ${row(`Revenue Target @ ${s.revRate}%:`, cr(psRev))}
+        ${row("ConvoAI Qualified Leads (30%):", num(T.convo))}
+      </div>
+      <div>
+        ${row("Total Sales Value:", cr(psSales))}
+        ${row("WhatsApp Qualified Leads (10%):", num(T.wa))}
+        ${row("Total Leads (ConvoAI + WhatsApp):", num(psLeads))}
+      </div>
+    </div></div>
+  </article>`;
+}
+
+/* ======================================================================
+   PRESALES – EXECUTIVE CARD
+   ====================================================================== */
+function presalesExecCardHTML(o, T, activeLevel) {
+  const p = periodsOf(activeLevel)[view.idx < periodsOf(activeLevel).length ? view.idx : 0]
+          || periodsOf(activeLevel)[0];
+  const vals = psExecTargets(p);
+  const s = S.settings;
+  const psLeads = T.wa + T.convo;
+  const ratio   = T.leads > 0 ? psLeads / T.leads : 0;
+  const psUnits  = T.units  * ratio;
+  const psSales  = T.sales  * ratio;
+  const psRev    = psSales  * s.revRate / 100;
+  // Bookings = presales-driven units for period; only show if non-trivial
+  const bookings = psUnits > 0.01 ? num(psUnits) : "\u2013";
+  const bookingVal = psSales > 0.01 ? cr(psSales) : "\u2013";
+  const revVal   = psRev > 0.01 ? cr(psRev) : "\u2013";
+  const row = (lab, val) =>
+    `<div class="row"><span class="lab">${lab}</span><span class="val">${val}</span></div>`;
+  const pills = PS_EXEC_LEVELS.map(l =>
+    `<button type="button" class="ps-pill${l === activeLevel ? ' active' : ''}" data-pslevel="${l}">${PS_EXEC_LEVEL_NAMES[l]}</button>`
+  ).join("");
+  return `<article class="card t${o.tint} ps-exec" aria-label="Presales Executive target">
+    <div class="head">
+      <div><div class="name">${esc(o.title)}</div><div class="sub2">${esc(o.sub)}</div></div>
+      <span class="pill">Presales</span>
+    </div>
+    <div class="ps-pills">${pills}</div>
+    <div class="box"><div class="grid2">
+      <div>
+        ${row("Calls made:", num(vals.callsMade))}
+        ${row("Warm leads:", num(vals.warmLeads))}
+        ${row("Bookings:", bookings)}
+        ${row("Revenue @ 2%:", revVal)}
+      </div>
+      <div>
+        ${row("Calls connected:", num(vals.callsConnected))}
+        ${row("Site visits:", num(vals.siteVisits))}
+        ${row("Booking value:", bookingVal)}
+      </div>
+    </div></div>
+  </article>`;
+}
+
+/* ======================================================================
    OVERVIEW
    ====================================================================== */
 function renderOverview() {
   const p = curPeriod(), D = periodData(p), T = D.total, A = D.ach, s = S.settings;
+
+  /* ── Presales Digital ── */
+  if (view.role === "presales-digital") {
+    $("viewSub").textContent = `${LV_NAME[p.level]} target · ${p.label}`;
+    // KPIs focused on presales digital channels
+    const psLeads = T.wa + T.convo;
+    const ratio   = T.leads > 0 ? psLeads / T.leads : 0;
+    const psUnits  = T.units  * ratio;
+    const psSales  = T.sales  * ratio;
+    const psRev    = psSales  * s.revRate / 100;
+    const k = (l, v, sub) => `<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${sub}</div></div>`;
+    $("kpis").innerHTML = [
+      k("Presales Units Target", num(psUnits), `via ConvoAI + WhatsApp (${s.wa + s.convo}% of leads)`),
+      k("Total Sales Value", cr(psSales), `Presales channel contribution`),
+      k(`Revenue @ ${s.revRate}%`, cr(psRev), `On presales channel sales`),
+      k("ConvoAI Leads (30%)", num(T.convo), `Out of ${num(T.leads)} total qualified leads`),
+      k("WhatsApp Leads (10%)", num(T.wa), `Out of ${num(T.leads)} total qualified leads`),
+      k("Total Presales Leads", num(psLeads), `ConvoAI + WhatsApp combined`)
+    ].join("");
+    $("funnelHint").textContent = "Presales Digital channels: ConvoAI and WhatsApp contribute " + (s.wa + s.convo) + "% of all qualified leads, driving presales unit targets.";
+    $("funnel").innerHTML = `
+      <div class="fstep"><div class="fl2">Total Leads (ConvoAI+WA)</div><div class="fv">${num(psLeads)}</div></div>
+      <div class="farrow">${s.leadConv}%<br>→</div>
+      <div class="fstep"><div class="fl2">Presales Walk-ins</div><div class="fv">${num(T.alloc * ratio)}</div></div>
+      <div class="farrow">${s.winRate}%<br>→</div>
+      <div class="fstep"><div class="fl2">Presales Units</div><div class="fv">${num(psUnits)}</div></div>
+      <div class="farrow">×<br>ticket</div>
+      <div class="fstep"><div class="fl2">Sales Value</div><div class="fv">${cr(psSales)}</div></div>`;
+    $("chanChips").innerHTML = `<span class="chip">ConvoAI ${s.convo}% · ${num(T.convo)} leads</span><span class="chip">WhatsApp ${s.wa}% · ${num(T.wa)} leads</span><span class="chip">Total presales leads ${num(psLeads)}</span>`;
+    // Cards: one per Sales Head showing their presales digital contribution
+    $("ovCards").innerHTML = SM_LIST.map((sm, i) =>
+      presalesDigitalCardHTML(
+        { title: sm, sub: D.bySm[sm].projects.map(b => b.name).join(", "), tint: i % 4 },
+        D.bySm[sm].m
+      )
+    ).join("");
+    // Tabs hidden for presales role
+    $("ovTabs").style.display = "none";
+    $("view-overview").querySelector("div.panel")?.style && ($("view-overview").querySelectorAll(".panel").forEach(el => el.style.display=""));
+    renderBreakdown(p);
+    return;
+  }
+
+  /* ── Presales Executive ── */
+  if (view.role === "presales-exec") {
+    $("viewSub").textContent = `All Lighthouse Luxury projects · ${PS_EXEC_LEVEL_NAMES[view.psExecLevel].toLowerCase()} view`;
+    const psLeads = T.wa + T.convo;
+    const ratio   = T.leads > 0 ? psLeads / T.leads : 0;
+    const psUnits  = T.units  * ratio;
+    const psSales  = T.sales  * ratio;
+    const psRev    = psSales  * s.revRate / 100;
+    // KPIs for exec: activity targets
+    const psPer = psExecTargets(p);
+    const k = (l, v, sub) => `<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${sub}</div></div>`;
+    $("kpis").innerHTML = [
+      k("Calls Made", num(psPer.callsMade), `${PS_EXEC_LEVEL_NAMES[view.psExecLevel]} target`),
+      k("Calls Connected", num(psPer.callsConnected), `${Math.round(psPer.callsConnected/psPer.callsMade*100)}% connect rate`),
+      k("Warm Leads", num(psPer.warmLeads), `${PS_EXEC_LEVEL_NAMES[view.psExecLevel]} warm-up target`),
+      k("Site Visits", num(psPer.siteVisits), `Qualified site visits`),
+      k("Bookings Target", psUnits > 0.01 ? num(psUnits) : "–", `Presales-driven units for period`),
+      k(`Revenue @ ${s.revRate}%`, psRev > 0.01 ? cr(psRev) : "–", `On presales bookings`)
+    ].join("");
+    $("funnelHint").textContent = "Presales Executive activity funnel: calls → connections → warm leads → site visits → bookings.";
+    $("funnel").innerHTML = `
+      <div class="fstep"><div class="fl2">Calls Made</div><div class="fv">${num(psPer.callsMade)}</div></div>
+      <div class="farrow">${Math.round(psPer.callsConnected/psPer.callsMade*100)}%<br>→</div>
+      <div class="fstep"><div class="fl2">Connected</div><div class="fv">${num(psPer.callsConnected)}</div></div>
+      <div class="farrow">→</div>
+      <div class="fstep"><div class="fl2">Warm Leads</div><div class="fv">${num(psPer.warmLeads)}</div></div>
+      <div class="farrow">→</div>
+      <div class="fstep"><div class="fl2">Site Visits</div><div class="fv">${num(psPer.siteVisits)}</div></div>`;
+    $("chanChips").innerHTML = `<span class="chip">Connect rate ${Math.round(psPer.callsConnected/psPer.callsMade*100)}%</span><span class="chip">Warm-lead rate ${Math.round(psPer.warmLeads/psPer.callsConnected*100)}%</span><span class="chip">Site-visit rate ${Math.round(psPer.siteVisits/psPer.warmLeads*100)}%</span>`;
+    // Cards: one per Sales Head showing exec activity targets
+    const execSub = `All Lighthouse Luxury projects · per ${view.psExecLevel}`;
+    $("ovCards").innerHTML = SM_LIST.map((sm, i) =>
+      presalesExecCardHTML(
+        { title: sm + " – Presales", sub: execSub, tint: i % 4 },
+        D.bySm[sm].m,
+        view.psExecLevel
+      )
+    ).join("");
+    $("ovTabs").style.display = "none";
+    renderBreakdown(p);
+    return;
+  }
+
+  /* ── Sales Head (original) ── */
+  $("ovTabs").style.display = "";
   $("viewSub").textContent = `${LV_NAME[p.level]} target · ${p.label}` + (s.splitMode === "working" ? " · working days (Mon–Sat)" : " · calendar days");
   const k = (l, v, sub) => `<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${sub}</div></div>`;
   $("kpis").innerHTML = [
@@ -612,11 +858,11 @@ function renderOverview() {
     <div class="fstep"><div class="fl2">Total walk-ins</div><div class="fv">${num(T.walk)}</div></div>
     <div class="farrow">${s.winRate}%<br>→</div>
     <div class="fstep"><div class="fl2">Sales units</div><div class="fv">${num(T.units)}</div></div>`;
-  $("chanChips").innerHTML = `<span class="chip">WhatsApp ${s.wa}% · ${num(T.wa)}</span><span class="chip">ConvoAI ${s.convo}% · ${num(T.convo)}</span><span class="chip">Digital ${100 - s.wa - s.convo}% · ${num(T.digital)}</span><span class="chip">Meta ${s.metaShare}% of Digital · ${num(T.meta)}</span><span class="chip">Website ${100 - s.metaShare}% of Digital · ${num(T.web)}</span>`;
+  $("chanChips").innerHTML = `<span class="chip">WhatsApp ${s.wa}% · ${num(T.wa)}</span><span class="chip">ConvoAI ${s.convo}% · ${num(T.convo)}</span><span class="chip">Digital ${100 - s.wa - s.convo}% · ${num(T.digital)} (Meta ${s.metaShare}% · ${num(T.meta)} / Website ${100 - s.metaShare}% · ${num(T.web)})</span>`;
 
   let html = "";
   if (view.ovTab === "sm") {
-    html = SM_LIST.map((sm, i) => cardHTML({ title: sm, sub: D.bySm[sm].projects.map(b => b.name).join(", "), badge: "Sourcing Manager", tint: i % 4, t: D.bySm[sm].m, a: D.bySm[sm].a })).join("");
+    html = SM_LIST.map((sm, i) => cardHTML({ title: sm, sub: D.bySm[sm].projects.map(b => b.name).join(", "), badge: "Sales Head", tint: i % 4, t: D.bySm[sm].m, a: D.bySm[sm].a })).join("");
   } else if (view.ovTab === "project") {
     html = BASE_PROJECTS.map(b => cardHTML({ title: b.name, sub: `SM: ${b.sm} · Ticket ₹${b.ticket} Cr`, badge: "Project", tint: SM_LIST.indexOf(b.sm) % 4, t: D.perProject[b.id].m, a: D.perProject[b.id].a })).join("");
   } else {
@@ -632,8 +878,8 @@ function renderOverview() {
 }
 
 function renderBreakdown(p) {
-  const finer = { year: "month", month: "week", week: "day" }[p.level];
-  if (!finer) { $("bdTitle").textContent = "Breakdown"; $("bdHint").textContent = ""; $("breakdown").innerHTML = '<p class="hint">A single day cannot be split further. Switch to Week, Month or Year to see the breakdown.</p>'; return; }
+  const finer = { year: "quarter", quarter: "month", month: "week", week: "day" }[p.level];
+  if (!finer) { $("bdTitle").textContent = "Breakdown"; $("bdHint").textContent = ""; $("breakdown").innerHTML = '<p class="hint">A single day cannot be split further. Switch to Month, Quarter or Year to see the breakdown.</p>'; return; }
   const subs = periodsOf(finer).filter(q => q.end >= p.start && q.start <= p.end).map(q => ({ ...q, start: Math.max(q.start, p.start), end: Math.min(q.end, p.end), clipped: q.start < p.start || q.end > p.end }));
   $("bdTitle").textContent = `${LV_NAME[finer]}-wise breakdown of ${p.label}`;
   $("bdHint").textContent = S.settings.unitMode === "whole" ? "Whole units. The parts are rounded so they add up exactly to the total." : "Exact values. Switch to whole units in Rules & Settings if you need integers.";
@@ -675,7 +921,7 @@ function buildSetForm() {
     tw.style.visibility = "visible";
     const opts = form.scope === "project" ? BASE_PROJECTS.map(b => [b.id, `${b.name} (${b.sm})`]) : SM_LIST.map(s => [s, s]);
     if (!opts.find(o => o[0] === form.target)) form.target = opts[0][0];
-    tw.innerHTML = `<label class="fl" for="fTarget">${form.scope === "project" ? "Project" : "Sourcing manager"}</label><select id="fTarget">${opts.map(o => `<option value="${esc(o[0])}"${o[0] === form.target ? " selected" : ""}>${esc(o[1])}</option>`).join("")}</select>`;
+    tw.innerHTML = `<label class="fl" for="fTarget">${form.scope === "project" ? "Project" : "Sales head"}</label><select id="fTarget">${opts.map(o => `<option value="${esc(o[0])}"${o[0] === form.target ? " selected" : ""}>${esc(o[1])}</option>`).join("")}</select>`;
     $("fTarget").addEventListener("change", e => { form.target = e.target.value; syncTicket(); renderPreview(); });
   }
   document.querySelectorAll("#fLevel button").forEach(b => b.setAttribute("aria-pressed", b.dataset.level === form.level));
@@ -773,7 +1019,7 @@ function renderTeam() {
   const total = team.reduce((a, m) => a + (+m.pct || 0), 0), okSum = Math.abs(total - 100) < 0.05;
   $("teamSummary").innerHTML = `<span class="chip">${esc(sm)} target: ${num(M.units)} units · ${cr(M.sales)}</span> <span class="chip ${okSum ? "ok" : "warn"}">Shares total ${Math.round(total * 100) / 100}%${okSum ? "" : " (should be 100%)"}</span>`;
   $("teamTable").innerHTML = `<table><thead><tr><th scope="col">Team member</th><th scope="col" class="l">Role</th><th scope="col">${view.teamMode === "units" ? "Units" : "Share %"}</th><th scope="col">Units</th><th scope="col">Sales value</th><th scope="col">Revenue</th><th scope="col">Walk-ins</th><th scope="col">Leads</th><th scope="col"><span class="sr">Remove</span></th></tr></thead><tbody>${
-    team.map(mem => { const f = mem.pct / 100; const roles = ["Sourcing Manager", "Sales Executive", "Telecaller", "Marketing"];
+    team.map(mem => { const f = mem.pct / 100; const roles = ["Sales Head", "Sales Executive", "Telecaller", "Marketing"];
       const shareVal = view.teamMode === "units" ? Math.round(M.units * f * 100) / 100 : Math.round(mem.pct * 100) / 100;
       return `<tr><td class="l"><input type="text" data-f="name" data-id="${mem.id}" value="${esc(mem.name)}" aria-label="Name"></td>
       <td class="l"><select data-f="role" data-id="${mem.id}" aria-label="Role for ${esc(mem.name)}">${roles.map(r => `<option${r === mem.role ? " selected" : ""}>${r}</option>`).join("")}</select></td>
@@ -791,6 +1037,7 @@ function setEqual(sm) { const t = S.team[sm]; t.forEach(m => { m.pct = 100 / t.l
 function renderSettings() {
   const s = S.settings;
   const nf = (k, label, hint, step = 1) => `<div><label class="fl" for="s_${k}">${label}</label><input type="number" id="s_${k}" data-s="${k}" value="${s[k]}" min="0" max="100" step="${step}"><div class="hint" style="margin:3px 0 0">${hint}</div></div>`;
+  const pse = (k, label, hint) => `<div><label class="fl" for="pse_${k}">${label}</label><input type="number" id="pse_${k}" data-pse="${k}" value="${S.psExec[k]}" min="0" step="1"><div class="hint" style="margin:3px 0 0">${hint}</div></div>`;
   $("viewSub").textContent = "Rules that turn sales units into walk-ins and leads";
   $("rules").innerHTML = [
     nf("revRate", "Revenue rate (%)", "Revenue = % of sales value", .1),
@@ -802,17 +1049,40 @@ function renderSettings() {
     nf("metaShare", "Meta share of Digital (%)", "Website is the rest")
   ].join("");
   $("calSet").innerHTML = `
-    <div><label class="fl" for="s_yearType">Year type</label><select id="s_yearType" data-s="yearType"><option value="FY"${s.yearType === "FY" ? " selected" : ""}>Financial year (Apr – Mar)</option><option value="CY"${s.yearType === "CY" ? " selected" : ""}>Calendar year (Jan – Dec)</option></select></div>
-    <div><label class="fl" for="s_splitMode">Split a bigger target by</label><select id="s_splitMode" data-s="splitMode"><option value="calendar"${s.splitMode === "calendar" ? " selected" : ""}>Calendar days</option><option value="working"${s.splitMode === "working" ? " selected" : ""}>Working days (Mon–Sat)</option></select></div>
+    <div><label class="fl" for="s_yearType">Year type</label><select id="s_yearType" data-s="yearType"><option value="FY"${s.yearType === "FY" ? " selected" : ""}>Financial year (Apr \u2013 Mar)</option><option value="CY"${s.yearType === "CY" ? " selected" : ""}>Calendar year (Jan \u2013 Dec)</option></select></div>
     <div><label class="fl" for="s_unitMode">Units shown as</label><select id="s_unitMode" data-s="unitMode"><option value="exact"${s.unitMode === "exact" ? " selected" : ""}>Exact decimals</option><option value="whole"${s.unitMode === "whole" ? " selected" : ""}>Whole units (parts add up)</option></select></div>`;
-  $("projSet").innerHTML = `<table><thead><tr><th scope="col">Project</th><th scope="col" class="l">Sourcing manager</th><th scope="col">Ticket size (₹ Cr)</th></tr></thead><tbody>${
+  $("projSet").innerHTML = `<table><thead><tr><th scope="col">Project</th><th scope="col" class="l">Sales head</th><th scope="col">Ticket size (₹ Cr)</th></tr></thead><tbody>${
     BASE_PROJECTS.map(b => `<tr><td>${esc(b.name)}</td><td class="l">${esc(b.sm)}</td><td><input type="number" min="0" step="0.5" style="width:100px" data-ticket="${b.id}" value="${ticketOf(b.id)}" aria-label="Ticket size for ${esc(b.name)}"></td></tr>`).join("")}</tbody></table>`;
+  // Presales Executive weekly activity targets
+  $("psexecSet").innerHTML = [
+    pse("weekCallsMade", "Weekly calls made (target)", "Total outbound calls per week for Presales Executive"),
+    pse("weekCallsConnected", "Weekly calls connected", "Connected calls out of total made"),
+    pse("weekWarmLeads", "Weekly warm leads", "Leads qualified as warm/interested after call"),
+    pse("weekSiteVisits", "Weekly site visits", "Prospects who visit a project site")
+  ].join("");
 }
 
 /* ======================================================================
    NAVIGATION + PERIOD BAR
    ====================================================================== */
 const TITLES = { overview: "Target Overview", set: "Set Target", team: "Team Allocation", settings: "Rules & Settings" };
+const ROLE_LABELS = { "saleshead": "Sales Head", "presales-digital": "Presales \u2013 Digital", "presales-exec": "Presales Executive" };
+
+function applyRoleNav() {
+  const role = view.role;
+  // show/hide nav items based on allowed roles
+  document.querySelectorAll(".nav button[data-roles]").forEach(b => {
+    const allowed = (b.dataset.roles || "").split(",");
+    b.style.display = allowed.includes(role) ? "" : "none";
+  });
+  // update topbar role badge
+  const badge = $("roleBadge"); if (badge) badge.textContent = ROLE_LABELS[role] || role;
+  // sync sidebar role switcher active states
+  document.querySelectorAll("#roleSwitcher button[data-role]").forEach(b => {
+    b.classList.toggle("active", b.dataset.role === role);
+  });
+}
+
 function renderPeriodBar() {
   const py = $("pickYear"); const y = S.settings.fyYear;
   py.innerHTML = [y - 1, y, y + 1].map(v => `<option value="${v}"${v === y ? " selected" : ""}>${yearLabel(v)}</option>`).join("");
@@ -828,6 +1098,7 @@ function show(screen) {
   document.querySelectorAll(".nav button").forEach(b => { if (b.dataset.view === screen) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   $("viewTitle").textContent = TITLES[screen];
   $("periodBar").style.display = (screen === "overview" || screen === "team") ? "flex" : "none";
+  applyRoleNav();
   refresh();
 }
 function refresh() {
@@ -845,6 +1116,24 @@ document.querySelectorAll(".nav button").forEach(b => b.addEventListener("click"
 $("themeBtn").addEventListener("click", () => {
   const on = document.documentElement.classList.toggle("dark");
   $("themeBtn").setAttribute("aria-pressed", on); $("themeBtn").textContent = on ? "Light mode" : "Dark mode";
+});
+
+/* Role switcher */
+$("roleSwitcher").addEventListener("click", e => {
+  const b = e.target.closest("button[data-role]"); if (!b) return;
+  view.role = b.dataset.role;
+  // reset psExecLevel when entering exec role
+  if (view.role === "presales-exec") view.psExecLevel = "week";
+  applyRoleNav();
+  if (view.screen !== "overview" && view.role !== "saleshead") show("overview"); else refresh();
+});
+
+/* Presales Executive period pills (delegated from ovCards) */
+$("ovCards").addEventListener("click", e => {
+  const b = e.target.closest("button[data-pslevel]"); if (!b) return;
+  if (view.role !== "presales-exec") return;
+  view.psExecLevel = b.dataset.pslevel;
+  renderOverview();
 });
 $("levelSeg").addEventListener("click", e => {
   const b = e.target.closest("button[data-level]"); if (!b) return;
@@ -930,6 +1219,10 @@ function onSetting(e) {
     renderSettings(); toast("Setting updated. Every screen now uses it.");
   }
   if (el.dataset.ticket) { const v = parseFloat(el.value); if (v > 0) { S.projects[el.dataset.ticket].ticket = v; persist(); toast("Ticket size updated."); } }
+  if (el.dataset.pse) {
+    const k = el.dataset.pse, v = Math.max(0, parseFloat(el.value) || 0);
+    S.psExec[k] = v; persistPsExec(); toast("Presales Executive target updated.");
+  }
 }
 $("view-settings").addEventListener("change", onSetting);
 $("resetAll").addEventListener("click", () => {
