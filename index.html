@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lighthouse Luxury | Target Module (Prod)</title>
+<style>
+  /* Lighthouse theme: primary #D18463, dark header #121212, Montserrat (from lib/style/theme_const.dart) */
+  @font-face {
+    font-family: "Montserrat";
+    src: local("Montserrat"), url("../fonts/Montserrat/Montserrat-VariableFont_wght.ttf") format("truetype");
+    font-weight: 100 900;
+  }
+  :root {
+    --bg: #f6f6f6; --panel: #ffffff; --ink: #121212; --muted: #5f5f5f; --line: #e4dedb;
+    --primary: #d18463; --primary-light: #d8a08a; --primary-dark: #ab7e6d; --accent-text: #8a5a47;
+    --on-primary: #121212; --side: #121212; --side-ink: #e9e9e9;
+    --burnt: #e28e2f; --ok: #1b7a43; --bad: #b3261e; --warn-bg: #fff4dc; --warn-line: #efd28a; --warn-ink: #7a5200;
+    --c0: #ffd3c7; --c1: #ffe0b8; --c2: #f5d5dc; --c3: #e8dcd2; --inner: rgba(255,255,255,.55);
+    --shadow: 0 1px 2px rgba(0,0,0,.06), 0 4px 14px rgba(0,0,0,.05);
+  }
+  html.dark {
+    --bg: #070707; --panel: #121212; --ink: #f1f1f1; --muted: #a8a8a8; --line: #2b2b2b;
+    --accent-text: #d8a08a; --side: #000000;
+    --warn-bg: #2c2410; --warn-line: #5b4a1a; --warn-ink: #f0cf84;
+    --c0: #3b2620; --c1: #3b2f1c; --c2: #382329; --c3: #2f2925; --inner: rgba(255,255,255,.07);
+    --shadow: none;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Montserrat", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.45; }
+  button, input, select { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid #2f7de1; outline-offset: 2px; }
+
+  .app { display: grid; grid-template-columns: 236px 1fr; min-height: 100vh; }
+  aside.side { background: var(--side); color: var(--side-ink); padding: 18px 12px; position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; gap: 6px; }
+  .brand { padding: 4px 10px 18px; }
+  .brand b { display: block; font-size: 1.15rem; letter-spacing: .16em; color: var(--primary); }
+  .brand span { font-size: .68rem; letter-spacing: .28em; color: #bdbdbd; }
+  .nav { display: flex; flex-direction: column; gap: 4px; }
+  .nav button { text-align: left; background: transparent; border: 0; color: var(--side-ink); padding: 11px 12px; border-radius: 10px; cursor: pointer; font-weight: 500; }
+  .nav button:hover { background: #242424; }
+  .nav button[aria-current="page"] { background: var(--primary); color: var(--on-primary); font-weight: 700; }
+  .side .foot { margin-top: auto; font-size: .7rem; color: #9a9a9a; padding: 0 10px; }
+  .btn-theme { background: #242424; border: 1px solid #3a3a3a; color: #eee; border-radius: 10px; padding: 8px 10px; cursor: pointer; margin: 0 4px 8px; }
+
+  .main { min-width: 0; display: flex; flex-direction: column; }
+  header.topbar { background: var(--panel); border-bottom: 1px solid var(--line); padding: 14px 24px; display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 5; }
+  header.topbar h1 { margin: 0; font-size: 1.15rem; }
+  header.topbar .sub { font-size: .75rem; color: var(--muted); }
+  .periodbar { display: flex; flex-wrap: nowrap; gap: 8px; align-items: flex-end; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .seg button { background: var(--panel); border: 0; padding: 8px 14px; cursor: pointer; font-weight: 600; font-size: .82rem; border-right: 1px solid var(--line); }
+  .seg button:last-child { border-right: 0; }
+  .seg button[aria-pressed="true"] { background: var(--primary); color: var(--on-primary); }
+  select, input[type="number"], input[type="date"], input[type="text"] { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-height: 38px; }
+  label.fl { display: block; font-size: .74rem; color: var(--muted); font-weight: 600; margin-bottom: 4px; }
+
+  .content { padding: 20px 24px 60px; width: 100%; }
+  .view[hidden] { display: none; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; box-shadow: var(--shadow); margin-bottom: 18px; }
+  .panel h2 { margin: 0 0 4px; font-size: 1rem; }
+  .panel .hint { margin: 0 0 12px; color: var(--muted); font-size: .8rem; }
+  .chip { display: inline-block; background: var(--c0); color: var(--ink); border-radius: 999px; padding: 3px 10px; font-size: .72rem; font-weight: 600; }
+  .chip.warn { background: var(--warn-bg); color: var(--warn-ink); border: 1px solid var(--warn-line); }
+  .chip.ok { background: #d8f0e1; color: #0f5a2d; }
+  html.dark .chip.ok { background: #153a24; color: #8fe0b0; }
+  .note { background: var(--warn-bg); border: 1px solid var(--warn-line); color: var(--warn-ink); padding: 9px 14px; border-radius: 10px; font-size: .8rem; margin-bottom: 14px; }
+
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 18px; }
+  .kpi { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px; box-shadow: var(--shadow); border-top: 3px solid var(--primary); }
+  .kpi .l { font-size: .74rem; color: var(--muted); font-weight: 600; }
+  .kpi .v { font-size: 1.4rem; font-weight: 700; margin-top: 2px; }
+  .kpi .s { font-size: .74rem; color: var(--muted); }
+
+  .funnel { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; }
+  .fstep { flex: 1 1 150px; background: var(--c0); border-radius: 12px; padding: 10px 14px; }
+  .fstep .fl2 { font-size: .72rem; color: var(--muted); font-weight: 600; }
+  .fstep .fv { font-size: 1.25rem; font-weight: 700; }
+  .farrow { align-self: center; font-size: .72rem; color: var(--accent-text); font-weight: 700; text-align: center; min-width: 54px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+
+  .tabs { display: flex; gap: 6px; margin: 0 0 14px; flex-wrap: wrap; }
+  .tabs button { background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 7px 16px; cursor: pointer; font-weight: 600; font-size: .82rem; }
+  .tabs button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  html.dark .tabs button[aria-pressed="true"] { background: var(--primary); color: #121212; border-color: var(--primary); }
+
+  /* Target cards (same layout as the provided screenshot) */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 18px; }
+  .card { border-radius: 20px; padding: 16px; }
+  .card.t0 { background: var(--c0); } .card.t1 { background: var(--c1); } .card.t2 { background: var(--c2); } .card.t3 { background: var(--c3); }
+  .card .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 10px; }
+  .card .name { font-size: 1.1rem; font-weight: 700; }
+  .card .sub2 { font-size: .74rem; color: var(--muted); }
+  .pill { background: #fff; color: #121212; border-radius: 8px; padding: 6px 12px; font-size: .74rem; font-weight: 600; white-space: nowrap; }
+  html.dark .pill { background: #1a1a1a; color: #eee; }
+  .box { background: var(--inner); border-radius: 14px; padding: 4px 14px; margin-bottom: 10px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; column-gap: 26px; }
+  .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 1px solid rgba(128,128,128,.25); font-size: .8rem; min-height: 58px; }
+  .row .lab { color: var(--muted); }
+  .row .val { font-weight: 700; white-space: nowrap; text-align: right; }
+  .totals { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tot { background: var(--inner); border-radius: 14px; padding: 10px 14px; }
+  .tot .tl { font-size: .74rem; color: var(--muted); }
+  .tot .tv { font-size: 1.4rem; font-weight: 700; }
+  .tot .tv small { font-size: .74rem; font-weight: 500; color: var(--muted); }
+  .bar { height: 6px; background: rgba(128,128,128,.25); border-radius: 3px; margin-top: 6px; overflow: hidden; }
+  .bar > i { display: block; height: 100%; background: var(--primary-dark); }
+
+  .tablewrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: .82rem; }
+  th, td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  thead th { background: var(--c0); position: sticky; top: 0; font-weight: 700; }
+  tr.total td { font-weight: 700; background: var(--c3); }
+  td.l, th.l { text-align: left; }
+  .mini { display: inline-block; height: 8px; background: var(--primary); border-radius: 4px; vertical-align: middle; min-width: 2px; }
+
+  .formgrid { display: grid; grid-template-columns: minmax(300px, 1fr) minmax(300px, 1fr); gap: 18px; align-items: start; }
+  .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; }
+  .fields .full { grid-column: 1 / -1; }
+  .fields input:not([type="radio"]), .fields select { width: 100%; }
+  .radios label { display: flex; gap: 8px; align-items: flex-start; }
+  .radios input { margin-top: 3px; flex: none; }
+  .card .chip { background: var(--inner); }
+  td input[type="text"] { width: 150px; }
+  .radios { display: flex; flex-direction: column; gap: 6px; font-size: .82rem; }
+  .btn { background: var(--primary); color: var(--on-primary); border: 0; border-radius: 10px; padding: 10px 20px; font-weight: 700; cursor: pointer; }
+  .btn:hover { background: var(--primary-light); }
+  .btn.sec { background: transparent; border: 1px solid var(--primary-dark); color: var(--accent-text); }
+  .btn.sm { padding: 6px 12px; font-size: .78rem; }
+  .btn.danger { background: transparent; border: 1px solid var(--bad); color: var(--bad); }
+  .ladder { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 10px 0; }
+  .ladder div { background: var(--c0); border-radius: 12px; padding: 8px 10px; text-align: center; }
+  .ladder b { display: block; font-size: 1.1rem; }
+  .ladder span { font-size: .7rem; color: var(--muted); font-weight: 600; }
+  .tree { font-size: .82rem; }
+  .tree ul { list-style: none; margin: 4px 0 4px 14px; padding-left: 12px; border-left: 2px solid var(--c0); }
+  .tree li { margin: 3px 0; }
+  .setgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px 16px; }
+  .setgrid input, .setgrid select { width: 100%; }
+  #toast { position: fixed; right: 20px; bottom: 20px; background: #121212; color: #fff; border-left: 4px solid var(--primary); padding: 12px 18px; border-radius: 10px; opacity: 0; pointer-events: none; transition: opacity .2s; max-width: 360px; z-index: 20; }
+  #toast.show { opacity: 1; }
+
+  /* ── Role Switcher ── */
+  .role-switch { display: flex; flex-direction: column; gap: 4px; padding: 0 4px 14px; border-bottom: 1px solid #2b2b2b; margin-bottom: 6px; }
+  .role-switch .rs-label { font-size: .62rem; letter-spacing: .22em; color: #888; padding: 0 8px 4px; font-weight: 700; text-transform: uppercase; }
+  .role-switch button { text-align: left; background: transparent; border: 0; color: var(--side-ink); padding: 9px 12px; border-radius: 10px; cursor: pointer; font-weight: 500; font-size: .83rem; display: flex; align-items: center; gap: 8px; transition: background .15s; }
+  .role-switch button:hover { background: #242424; }
+  .role-switch button.active { background: #2a2a2a; color: var(--primary); font-weight: 700; }
+  .role-switch button .rs-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; background: #555; }
+  .role-switch button.active .rs-dot { background: var(--primary); }
+
+  /* ── Presales Digital card ── */
+  .card.ps-digital .row { min-height: 54px; }
+
+  /* ── Presales Executive card ── */
+  .ps-pills { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+  .ps-pills button { background: var(--inner); border: 1px solid rgba(128,128,128,.25); border-radius: 999px; padding: 5px 14px; font-size: .78rem; font-weight: 600; cursor: pointer; color: var(--ink); transition: background .15s; }
+  .ps-pills button.active { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
+  .card.ps-exec .row { min-height: 52px; }
+
+  /* ── Role indicator in topbar ── */
+  .role-badge { font-size: .72rem; font-weight: 700; background: var(--c1); color: var(--ink); padding: 4px 12px; border-radius: 999px; border: 1px solid var(--line); white-space: nowrap; }
+
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; }
+    aside.side { position: static; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; }
+    .nav { flex-direction: row; flex-wrap: wrap; } .side .foot { display: none; }
+    .formgrid { grid-template-columns: 1fr; }
+    .cards { grid-template-columns: 1fr; }
+    .content { padding: 14px 12px 50px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><b>LIGHTHOUSE</b><span>LUXURY</span></div>
+    <button class="btn-theme" id="themeBtn" type="button" aria-pressed="false">Dark mode</button>
+    <!-- Role Switcher -->
+    <div class="role-switch" id="roleSwitcher">
+      <div class="rs-label">Dashboard Profile</div>
+      <button type="button" class="active" data-role="saleshead" id="role-saleshead">
+        <span class="rs-dot"></span>Sales Head
+      </button>
+      <button type="button" data-role="presales-digital" id="role-presales-digital">
+        <span class="rs-dot"></span>Presales &ndash; Digital
+      </button>
+      <button type="button" data-role="presales-exec" id="role-presales-exec">
+        <span class="rs-dot"></span>Presales Executive
+      </button>
+    </div>
+    <nav class="nav" aria-label="Target module">
+      <button type="button" data-view="overview" aria-current="page">Target Overview</button>
+      <button type="button" data-view="set" data-roles="saleshead">Set Target</button>
+      <button type="button" data-view="team" data-roles="saleshead">Team Allocation</button>
+      <button type="button" data-view="settings">Rules &amp; Settings</button>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:nowrap">
+          <h1 id="viewTitle">Target Overview</h1>
+          <span class="role-badge" id="roleBadge">Sales Head</span>
+        </div>
+        <div class="sub" id="viewSub"></div>
+      </div>
+      <div class="periodbar" id="periodBar">
+        <div><label class="fl" for="pickYear">Year</label><select id="pickYear"></select></div>
+        <div>
+          <span class="fl" id="lblLevel">Show target for</span>
+          <div class="seg" role="group" aria-labelledby="lblLevel" id="levelSeg">
+            <button type="button" data-level="month" aria-pressed="true">Month</button>
+            <button type="button" data-level="quarter" aria-pressed="false">Quarter</button>
+            <button type="button" data-level="year" aria-pressed="false">Year</button>
+          </div>
+        </div>
+        <div id="pickWrap"></div>
+      </div>
+    </header>
+
+    <div class="content">
+      <!-- ================= OVERVIEW ================= -->
+      <section class="view" id="view-overview" aria-labelledby="viewTitle">
+        <div class="kpis" id="kpis" aria-label="Company totals for the selected period"></div>
+        <div class="panel"><h2>Expected lead funnel</h2><p class="hint" id="funnelHint"></p><div class="funnel" id="funnel"></div><div class="chips" id="chanChips"></div></div>
+        <div class="tabs" role="group" aria-label="Group targets by" id="ovTabs">
+          <button type="button" data-tab="sm" aria-pressed="true">Sales Heads</button>
+          <button type="button" data-tab="project" aria-pressed="false">Projects</button>
+          <button type="button" data-tab="emp" aria-pressed="false">Employees</button>
+        </div>
+        <div class="cards" id="ovCards"></div>
+        <div class="panel" style="margin-top:20px"><h2 id="bdTitle">Breakdown</h2><p class="hint" id="bdHint"></p><div class="tablewrap" id="breakdown"></div></div>
+      </section>
+
+      <!-- ================= SET TARGET ================= -->
+      <section class="view" id="view-set" hidden aria-labelledby="viewTitle">
+        <div class="formgrid">
+          <div class="panel">
+            <h2>New target</h2>
+            <p class="hint">Enter the target once at any level. Every other period (day, week, month, year) is converted automatically.</p>
+            <div class="fields">
+              <div><label class="fl" for="fScope">Set target for</label>
+                <select id="fScope"><option value="project">A project</option><option value="sm">A sales head (split across projects)</option><option value="company">Whole company (split across projects)</option></select></div>
+              <div id="fTargetWrap"><label class="fl" for="fTarget">Project</label><select id="fTarget"></select></div>
+              <div class="full">
+                <span class="fl" id="fLvlLbl">Period</span>
+                <div class="seg" role="group" aria-labelledby="fLvlLbl" id="fLevel">
+                  <button type="button" data-level="year" aria-pressed="false">Year</button>
+                  <button type="button" data-level="month" aria-pressed="true">Month</button>
+                  <button type="button" data-level="week" aria-pressed="false">Week</button>
+                  <button type="button" data-level="day" aria-pressed="false">Day</button>
+                </div>
+              </div>
+              <div class="full" id="fPeriodWrap"></div>
+              <div><label class="fl" for="fUnits">Sales units target</label><input type="number" id="fUnits" min="0" step="0.01" value="1"></div>
+              <div id="fTicketWrap"><label class="fl" for="fTicket">Ticket size (₹ Cr)</label><input type="number" id="fTicket" min="0" step="0.5"></div>
+              <div class="full" id="fModeWrap">
+                <span class="fl">If a bigger period already has a target</span>
+                <div class="radios">
+                  <label><input type="radio" name="fMode" value="fit" checked> Fit inside it. The rest of the bigger period is reduced so its total stays the same.</label>
+                  <label><input type="radio" name="fMode" value="add"> Add on top. The bigger period's total goes up by the difference.</label>
+                </div>
+              </div>
+              <div class="full"><button type="button" class="btn" id="fSave">Save target</button></div>
+            </div>
+          </div>
+          <div class="panel" aria-live="polite">
+            <h2>Live preview</h2>
+            <p class="hint" id="pvHint"></p>
+            <div id="pvBody"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Saved targets</h2>
+          <p class="hint">Smaller periods win over bigger ones. Remove an entry to fall back to the bigger period's split.</p>
+          <div id="conflicts"></div>
+          <div class="tablewrap" id="targetLog"></div>
+        </div>
+      </section>
+
+      <!-- ================= TEAM ================= -->
+      <section class="view" id="view-team" hidden aria-labelledby="viewTitle">
+        <div class="formgrid" style="grid-template-columns: minmax(0,2fr) minmax(260px,1fr)">
+          <div class="panel">
+            <h2>Split a sales head's target across the team</h2>
+            <p class="hint">Shares are stored as percentages, so the same split applies to any day, week, month or year.</p>
+            <div class="fields" style="grid-template-columns: 1fr 2fr; align-items:end; margin-bottom:12px">
+              <div><label class="fl" for="tSm">Sales head</label><select id="tSm"></select></div>
+              <div>
+                <span class="fl" id="tModeLbl">Split by</span>
+                <div class="seg" role="group" aria-labelledby="tModeLbl" id="tMode">
+                  <button type="button" data-mode="equal" aria-pressed="false">Equal</button>
+                  <button type="button" data-mode="percent" aria-pressed="true">Percentage</button>
+                  <button type="button" data-mode="units" aria-pressed="false">Units</button>
+                </div>
+              </div>
+            </div>
+            <div id="teamSummary" style="margin-bottom:10px"></div>
+            <div class="tablewrap" id="teamTable"></div>
+            <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap">
+              <button type="button" class="btn sec sm" id="tAdd">Add team member</button>
+              <button type="button" class="btn sec sm" id="tBalance">Auto-balance to 100%</button>
+            </div>
+          </div>
+          <div class="panel">
+            <h2>Hierarchy</h2>
+            <p class="hint">Company → Sales head → Projects, with the team that shares the head's target.</p>
+            <div class="tree" id="tree"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SETTINGS ================= -->
+      <section class="view" id="view-settings" hidden aria-labelledby="viewTitle">
+        <div class="panel">
+          <h2>Conversion rules</h2>
+          <p class="hint">These reproduce the spreadsheet: 6 units gives 40 walk-ins (15%), 28 of them allocated (70%), needing 140 leads (20% lead-to-walk-in).</p>
+          <div class="setgrid" id="rules"></div>
+        </div>
+        <div class="panel">
+          <h2>Calendar &amp; splitting</h2>
+          <div class="setgrid" id="calSet"></div>
+        </div>
+        <div class="panel">
+          <h2>Project ticket sizes &amp; managers</h2>
+          <p class="hint">Sales value = units × ticket size.</p>
+          <div class="tablewrap" id="projSet"></div>
+        </div>
+        <div class="panel">
+          <h2>Presales Executive – Weekly Activity Targets</h2>
+          <p class="hint">These weekly targets auto-scale to daily, monthly, quarterly, or annual in the Presales Executive dashboard.</p>
+          <div class="setgrid" id="psexecSet"></div>
+        </div>
+        <div class="panel">
+          <button type="button" class="btn danger" id="resetAll">Reset demo to spreadsheet values</button>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+/* ======================================================================
+   DATA (from Lighthouse_MVT_Project_Targets.xlsx)
+   ====================================================================== */
+const BASE_PROJECTS = [
+  { id: "khar",   name: "Khar Santa",  sm: "Varun J", ticket: 15, units: 6 },
+  { id: "bwest",  name: "Bandra West", sm: "Varun J", ticket: 15, units: 6 },
+  { id: "bbay",   name: "Bandra Bay",  sm: "Dheeraj", ticket: 25, units: 8 },
+  { id: "worli",  name: "Worli",       sm: "Dhara",   ticket: 25, units: 4 },
+  { id: "lparel", name: "Lower Parel", sm: "Dhara",   ticket: 25, units: 4 },
+  { id: "sobo",   name: "SOBO",        sm: "Dhara",   ticket: 25, units: 4 },
+  { id: "versova",name: "Versova",     sm: "Mohit D", ticket: 20, units: 5 },
+  { id: "juhu",   name: "Juhu",        sm: "Mohit D", ticket: 15, units: 4 }
+];
+const SM_LIST = ["Varun J", "Dheeraj", "Dhara", "Mohit D"];
+/* Sample achieved ratios (demo only). Varun J matches the screenshot: 8/12 units, 52/80 walk-ins, 11/16, 42/64 */
+const DEMO_ACH = {
+  khar: { u: 2/3, w: .65, s: 11/16, a: 42/64 }, bwest: { u: 2/3, w: .65, s: 11/16, a: 42/64 },
+  bbay: { u: .5, w: .55, s: .6, a: .5 }, worli: { u: .75, w: .7, s: .8, a: .68 },
+  lparel: { u: .5, w: .52, s: .6, a: .5 }, sobo: { u: .25, w: .3, s: .4, a: .28 },
+  versova: { u: .6, w: .62, s: .7, a: .6 }, juhu: { u: .75, w: .72, s: .8, a: .7 }
+};
+const DEFAULT_SETTINGS = {
+  revRate: 2, winRate: 15, selfShare: 30, leadConv: 20, wa: 10, convo: 30, metaShare: 60,
+  yearType: "FY", fyYear: 2026, splitMode: "calendar", unitMode: "exact"
+};
+const STORE = "lighthouse_target_module_demo_v1";
+
+function freshState() {
+  const S = { settings: { ...DEFAULT_SETTINGS }, projects: {}, entries: [], team: {}, nextId: 1 };
+  BASE_PROJECTS.forEach(p => {
+    S.projects[p.id] = { ticket: p.ticket };
+    S.entries.push({ id: S.nextId++, projectId: p.id, level: "year", fy: DEFAULT_SETTINGS.fyYear, units: p.units });
+  });
+  SM_LIST.forEach((sm, i) => {
+    S.team[sm] = [
+      { id: "m" + (S.nextId++), name: sm, role: "Sales Head", pct: 40 },
+      { id: "m" + (S.nextId++), name: sm + " · Executive 1", role: "Sales Executive", pct: 30 },
+      { id: "m" + (S.nextId++), name: sm + " · Executive 2", role: "Sales Executive", pct: 30 }
+    ];
+  });
+  return S;
+}
+let S;
+try { S = JSON.parse(localStorage.getItem(STORE)); } catch (e) { S = null; }
+if (!S || !S.settings) S = freshState();
+S.settings = { ...DEFAULT_SETTINGS, ...S.settings };
+let VER = 1;
+function persist() { VER++; try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) { /* ignore */ } }
+
+/* ======================================================================
+   DATE HELPERS (UTC, midnight timestamps)
+   ====================================================================== */
+const DAY = 864e5;
+const LV = { day: 0, week: 1, month: 2, quarter: 3, year: 4 };
+const LV_NAME = { day: "Day", week: "Week", month: "Month", quarter: "Quarter", year: "Year" };
+const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const fromIso = s => Date.parse(s + "T00:00:00Z");
+const isoOf = t => new Date(t).toISOString().slice(0, 10);
+const fmtD = t => { const d = new Date(t); return d.getUTCDate() + " " + MON[d.getUTCMonth()]; };
+const fmtDY = t => fmtD(t) + " " + new Date(t).getUTCFullYear();
+const mondayOf = t => t - ((new Date(t).getUTCDay() + 6) % 7) * DAY;
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+function yearRange(fy) {
+  const m = S.settings.yearType === "FY" ? 3 : 0;
+  const start = Date.UTC(fy, m, 1), end = Date.UTC(fy + 1, m, 1) - DAY;
+  return { start, end, n: Math.round((end - start) / DAY) + 1 };
+}
+const yearLabel = fy => S.settings.yearType === "FY" ? `FY ${fy}-${String(fy + 1).slice(2)}` : `CY ${fy}`;
+const weight = t => S.settings.splitMode === "working" ? (new Date(t).getUTCDay() === 0 ? 0 : 1) : 1;
+function weightSum(a, b) { let w = 0; for (let t = a; t <= b; t += DAY) w += weight(t); return w; }
+
+function rangeOf(e) {
+  if (e.level === "year") return yearRange(e.fy);
+  const s = fromIso(e.start);
+  if (e.level === "quarter") { const d = new Date(s); return { start: s, end: Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 3, 1) - DAY }; }
+  if (e.level === "month") { const d = new Date(s); return { start: s, end: Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1) - DAY }; }
+  if (e.level === "week") return { start: s, end: s + 6 * DAY };
+  return { start: s, end: s };
+}
+
+/* ======================================================================
+   ENGINE: converts targets set at any level into a daily series per project
+   Rule: the smallest period wins. A bigger period's total stays fixed and
+   its free days share what is left after smaller periods are taken out.
+   ====================================================================== */
+const cache = { ver: -1, daily: {}, periods: {}, whole: {} };
+function ensureCache() { if (cache.ver !== VER) { cache.ver = VER; cache.daily = {}; cache.periods = {}; cache.whole = {}; } }
+
+function daily(pid) {
+  ensureCache();
+  if (cache.daily[pid]) return cache.daily[pid];
+  const yr = yearRange(S.settings.fyYear), n = yr.n;
+  const list = S.entries.filter(e => e.projectId === pid).map(e => ({ e, r: rangeOf(e) }))
+    .filter(x => x.r.end >= yr.start && x.r.start <= yr.end);
+  list.sort((a, b) => LV[b.e.level] - LV[a.e.level] || a.e.id - b.e.id); // big first, later wins on tie
+  const owner = new Int16Array(n).fill(-1);
+  list.forEach((x, i) => {
+    const a = Math.max(x.r.start, yr.start), b = Math.min(x.r.end, yr.end);
+    for (let t = a; t <= b; t += DAY) owner[(t - yr.start) / DAY] = i;
+  });
+  const val = new Float64Array(n), conflicts = [];
+  for (let i = list.length - 1; i >= 0; i--) { // smallest first
+    const x = list[i];
+    let fullW = weightSum(x.r.start, x.r.end);
+    const uniform = fullW === 0;
+    if (uniform) fullW = (x.r.end - x.r.start) / DAY + 1;
+    const wf = t => uniform ? 1 : weight(t);
+    const a = Math.max(x.r.start, yr.start), b = Math.min(x.r.end, yr.end);
+    let clipW = 0, assigned = 0, ownedW = 0; const owned = [];
+    for (let t = a; t <= b; t += DAY) {
+      const ix = (t - yr.start) / DAY; clipW += wf(t);
+      if (owner[ix] === i) { owned.push(ix); ownedW += wf(t); } else assigned += val[ix];
+    }
+    const T = x.e.units * clipW / fullW;
+    if (assigned > T + 1e-6) conflicts.push({ id: x.e.id, projectId: pid, target: T, smaller: assigned });
+    const rem = Math.max(0, T - assigned);
+    if (owned.length) {
+      if (ownedW === 0) owned.forEach(ix => { val[ix] = rem / owned.length; });
+      else owned.forEach(ix => { val[ix] = rem * wf(yr.start + ix * DAY) / ownedW; });
+    }
+  }
+  cache.daily[pid] = { val, conflicts, yr };
+  return cache.daily[pid];
+}
+function sumRange(pid, a, b) {
+  const { val, yr } = daily(pid);
+  a = Math.max(a, yr.start); b = Math.min(b, yr.end);
+  let s = 0; for (let t = a; t <= b; t += DAY) s += val[(t - yr.start) / DAY];
+  return s;
+}
+function lrm(vals, forcedTotal) { // largest remainder rounding so parts add up
+  const total = forcedTotal != null ? forcedTotal : Math.round(vals.reduce((a, b) => a + b, 0));
+  const fl = vals.map(v => Math.floor(v + 1e-9));
+  let left = total - fl.reduce((a, b) => a + b, 0);
+  const order = vals.map((v, i) => [v - fl[i], i]).sort((a, b) => b[0] - a[0]);
+  for (let k = 0; k < order.length && left > 0; k++, left--) fl[order[k][1]]++;
+  return fl;
+}
+
+function periodsOf(level) {
+  ensureCache();
+  if (cache.periods[level]) return cache.periods[level];
+  const yr = yearRange(S.settings.fyYear), out = [];
+  if (level === "year") out.push({ level, idx: 0, start: yr.start, end: yr.end, fullStart: yr.start, fullEnd: yr.end, label: yearLabel(S.settings.fyYear) });
+  else if (level === "quarter") {
+    const d0 = new Date(yr.start), y0 = d0.getUTCFullYear(), m0 = d0.getUTCMonth();
+    for (let i = 0; i < 4; i++) {
+      const qs = Date.UTC(y0, m0 + i * 3, 1), qe = Date.UTC(y0, m0 + i * 3 + 3, 1) - DAY;
+      if (qs > yr.end) break;
+      const sd = new Date(Math.max(qs, yr.start)), ed = new Date(Math.min(qe, yr.end));
+      out.push({ level, idx: i, start: Math.max(qs, yr.start), end: Math.min(qe, yr.end), fullStart: qs, fullEnd: qe,
+        label: `Q${i + 1} · ${MON[sd.getUTCMonth()]}–${MON[ed.getUTCMonth()]} ${ed.getUTCFullYear()}` });
+    }
+  }
+  else if (level === "month") {
+    let d = new Date(yr.start), y = d.getUTCFullYear(), m = d.getUTCMonth(), idx = 0;
+    for (;;) {
+      const ms = Date.UTC(y, m, 1), me = Date.UTC(y, m + 1, 1) - DAY;
+      if (ms > yr.end) break;
+      out.push({ level, idx: idx++, start: Math.max(ms, yr.start), end: Math.min(me, yr.end), fullStart: ms, fullEnd: me, label: MON[m] + " " + y });
+      if (++m > 11) { m = 0; y++; }
+    }
+  } else if (level === "week") {
+    let s = mondayOf(yr.start), i = 0;
+    while (s <= yr.end) {
+      out.push({ level, idx: i, start: Math.max(s, yr.start), end: Math.min(s + 6 * DAY, yr.end), fullStart: s, fullEnd: s + 6 * DAY, label: `W${i + 1} · ${fmtD(s)} – ${fmtD(s + 6 * DAY)}` });
+      s += 7 * DAY; i++;
+    }
+  } else {
+    for (let t = yr.start, i = 0; t <= yr.end; t += DAY, i++) out.push({ level, idx: i, start: t, end: t, fullStart: t, fullEnd: t, label: fmtDY(t) });
+  }
+  cache.periods[level] = out;
+  return out;
+}
+/* Units for a project in a standard period (honours whole-unit mode) */
+function unitsOf(pid, p) {
+  const exact = sumRange(pid, p.start, p.end);
+  if (S.settings.unitMode !== "whole") return exact;
+  if (p.level === "year") return Math.round(exact);
+  const key = pid + p.level;
+  if (!cache.whole[key]) cache.whole[key] = lrm(periodsOf(p.level).map(q => sumRange(pid, q.start, q.end)));
+  return cache.whole[key][p.idx];
+}
+
+/* ======================================================================
+   BUSINESS MATHS (reproduces the spreadsheet)
+   ====================================================================== */
+const projOf = id => BASE_PROJECTS.find(p => p.id === id);
+const ticketOf = id => S.projects[id].ticket;
+function derive(units, ticket) {
+  const s = S.settings;
+  const sales = units * ticket;
+  // Raw figures straight from the conversion rules (matches MVT.xlsx chain):
+  //   walk-ins  = units / win-rate
+  //   qualified = raw walk-ins / win-rate-derived ratio (= rawWalk * 4 at defaults)
+  const rawWalk = units / (s.winRate / 100);
+  const rawAlloc = rawWalk * (100 - s.selfShare) / 100;
+  const rawLeads = rawAlloc / (s.leadConv / 100);
+  // Spreadsheet behaviour: every project's figures are rounded to whole numbers
+  // FIRST, then summed. We only round when the project holds a whole number of
+  // units (the baseline / year view). Fractional units (day/week/month splits)
+  // keep exact decimals so the splitting maths stays smooth and totals add up.
+  const whole = Math.abs(units - Math.round(units)) < 1e-9;
+  const R = whole ? Math.round : (v => v);
+  const walk = R(rawWalk);
+  const leads = R(rawLeads);
+  const self = R(rawWalk * s.selfShare / 100);
+  const alloc = R(rawLeads * s.leadConv / 100);
+  const wa = R(rawLeads * s.wa / 100);
+  const convo = R(rawLeads * s.convo / 100);
+  const digital = leads - wa - convo;
+  const meta = R(digital * s.metaShare / 100);
+  const web = digital - meta;
+  return { units, sales, revenue: sales * s.revRate / 100, walk, self, alloc, leads, wa, convo, digital, meta, web };
+}
+const ZERO = () => ({ units: 0, sales: 0, revenue: 0, walk: 0, self: 0, alloc: 0, leads: 0, wa: 0, convo: 0, digital: 0, meta: 0, web: 0 });
+function addM(a, b, k = 1) { Object.keys(b).forEach(key => { a[key] += b[key] * k; }); return a; }
+function achieved(pid, m) {
+  const r = DEMO_ACH[pid];
+  return { units: m.units * r.u, sales: m.sales * r.u, revenue: m.revenue * r.u, walk: m.walk * r.w, self: m.self * r.s, alloc: m.alloc * r.a };
+}
+function sumAch(list) { const o = { units: 0, sales: 0, revenue: 0, walk: 0, self: 0, alloc: 0 }; list.forEach(a => Object.keys(o).forEach(k => { o[k] += a[k]; })); return o; }
+function scaleAch(a, f) { const o = {}; Object.keys(a).forEach(k => { o[k] = a[k] * f; }); return o; }
+
+/* Metrics for every project over a period */
+function periodData(p) {
+  const perProject = {}, total = ZERO(), achList = [];
+  BASE_PROJECTS.forEach(b => {
+    const m = derive(unitsOf(b.id, p), ticketOf(b.id));
+    perProject[b.id] = { m, a: achieved(b.id, m) };
+    addM(total, m); achList.push(perProject[b.id].a);
+  });
+  const bySm = {};
+  SM_LIST.forEach(sm => {
+    const ps = BASE_PROJECTS.filter(b => b.sm === sm), m = ZERO();
+    ps.forEach(b => addM(m, perProject[b.id].m));
+    bySm[sm] = { m, a: sumAch(ps.map(b => perProject[b.id].a)), projects: ps };
+  });
+  return { perProject, total, ach: sumAch(achList), bySm };
+}
+
+/* ======================================================================
+   FORMATTING
+   ====================================================================== */
+function num(v) {
+  if (!isFinite(v)) return "0";
+  const a = Math.abs(v);
+  if (a >= 100) return Math.round(v).toLocaleString("en-IN");
+  return (Math.round(v * 100) / 100).toString();
+}
+const cr = v => num(v) + " Cr";
+const pct = (a, t) => t > 0 ? Math.round(a / t * 100) + "%" : "0%";
+function toast(msg) { const t = $("toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove("show"), 2600); }
+
+/* ======================================================================
+   GLOBAL VIEW STATE
+   ====================================================================== */
+const view = { screen: "overview", level: "month", idx: 0, ovTab: "sm", teamSm: SM_LIST[0], teamMode: "percent", role: "saleshead", psExecLevel: "week" };
+function todayMs() { const n = new Date(); return Date.UTC(n.getFullYear(), n.getMonth(), n.getDate()); }
+function defaultIdx(level) {
+  const list = periodsOf(level), t = todayMs();
+  const i = list.findIndex(p => t >= p.start && t <= p.end);
+  return i >= 0 ? i : 0;
+}
+view.idx = defaultIdx(view.level);
+const curPeriod = () => periodsOf(view.level)[view.idx] || periodsOf(view.level)[0];
+
+/* ======================================================================
+   PRESALES DEFAULTS
+   ====================================================================== */
+const DEFAULT_PS_EXEC = { weekCallsMade: 1200, weekCallsConnected: 300, weekWarmLeads: 30, weekSiteVisits: 4 };
+const STORE_PSEXEC = "lighthouse_psexec_v1";
+try { if (!S.psExec) S.psExec = JSON.parse(localStorage.getItem(STORE_PSEXEC) || "null"); } catch(e) {}
+if (!S.psExec || typeof S.psExec !== 'object') S.psExec = { ...DEFAULT_PS_EXEC };
+S.psExec = { ...DEFAULT_PS_EXEC, ...S.psExec };
+function persistPsExec() { try { localStorage.setItem(STORE_PSEXEC, JSON.stringify(S.psExec)); } catch(e) {} }
+
+/* Scale weekly presales-exec targets to a period */
+function psExecTargets(p) {
+  const days = (p.end - p.start) / DAY + 1;
+  const f = days / 7;
+  const e = S.psExec;
+  return {
+    callsMade: e.weekCallsMade * f,
+    callsConnected: e.weekCallsConnected * f,
+    warmLeads: e.weekWarmLeads * f,
+    siteVisits: e.weekSiteVisits * f
+  };
+}
+
+const PS_EXEC_LEVELS = ["day", "week", "month", "quarter", "year"];
+const PS_EXEC_LEVEL_NAMES = { day: "Daily", week: "Weekly", month: "Monthly", quarter: "Quarterly", year: "Annual" };
+
+/* ======================================================================
+   TARGET CARD (layout from the screenshot)
+   ====================================================================== */
+function cardHTML(o) {
+  const t = o.t, a = o.a, s = S.settings;
+  const row = (lab, av, tv) => `<div class="row"><span class="lab">${lab}</span><span class="val">${av} / ${tv}</span></div>`;
+  const pc = t.sales > 0 ? Math.min(100, a.sales / t.sales * 100) : 0;
+  return `<article class="card t${o.tint}" aria-label="${esc(o.title)} target">
+    <div class="head"><div><div class="name">${esc(o.title)}</div><div class="sub2">${esc(o.sub)}</div></div><span class="pill">${esc(o.badge)}</span></div>
+    <div class="box"><div class="grid2">
+      <div>
+        ${row("Sales Units Target:", num(a.units), num(t.units))}
+        ${row(`Revenue Target @ ${s.revRate}%:`, num(a.revenue), cr(t.revenue))}
+        ${row(`Self-Generated / Reference Leads (${s.selfShare}%):`, num(a.self), num(t.self))}
+      </div>
+      <div>
+        ${row("Total Sales Value:", num(a.sales), cr(t.sales))}
+        ${row("Walk-ins Target:", num(a.walk), num(t.walk))}
+        ${row(`Allocated Walk-in Leads (${100 - s.selfShare}%):`, num(a.alloc), num(t.alloc))}
+      </div>
+    </div></div>
+    <div class="totals">
+      <div class="tot"><div class="tl">Total target</div><div class="tv">${cr(t.sales)} <small>(${num(t.units)} units)</small></div></div>
+      <div class="tot"><div class="tl">Achieved target</div><div class="tv">${cr(a.sales)} <small>(${num(a.units)} units)</small></div>
+        <div class="bar" role="progressbar" aria-label="Sales value achieved" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(pc)}"><i style="width:${pc}%"></i></div></div>
+    </div>
+    <div class="chips"><span class="chip">Qualified leads ${num(t.leads)}</span><span class="chip">WhatsApp ${num(t.wa)}</span><span class="chip">ConvoAI ${num(t.convo)}</span><span class="chip">Meta ${num(t.meta)}</span><span class="chip">Website ${num(t.web)}</span></div>
+  </article>`;
+}
+
+/* ======================================================================
+   PRESALES – DIGITAL CARD
+   ====================================================================== */
+function presalesDigitalCardHTML(o, T) {
+  const s = S.settings;
+  // proportion of leads from ConvoAI + WhatsApp
+  const psLeads = T.wa + T.convo;
+  const ratio   = T.leads > 0 ? psLeads / T.leads : 0;
+  const psUnits  = T.units  * ratio;
+  const psSales  = T.sales  * ratio;
+  const psRev    = psSales  * s.revRate / 100;
+  const row = (lab, val) =>
+    `<div class="row"><span class="lab">${lab}</span><span class="val">${val}</span></div>`;
+  return `<article class="card t${o.tint} ps-digital" aria-label="Presales Digital target – ${esc(o.title)}">
+    <div class="head">
+      <div><div class="name">${esc(o.title)}</div><div class="sub2">${esc(o.sub)}</div></div>
+      <span class="pill">Presales</span>
+    </div>
+    <div class="box"><div class="grid2">
+      <div>
+        ${row("Sales Target thru Convo &amp; WhatsApp:", num(psUnits))}
+        ${row(`Revenue Target @ ${s.revRate}%:`, cr(psRev))}
+        ${row("ConvoAI Qualified Leads (30%):", num(T.convo))}
+      </div>
+      <div>
+        ${row("Total Sales Value:", cr(psSales))}
+        ${row("WhatsApp Qualified Leads (10%):", num(T.wa))}
+        ${row("Total Leads (ConvoAI + WhatsApp):", num(psLeads))}
+      </div>
+    </div></div>
+  </article>`;
+}
+
+/* ======================================================================
+   PRESALES – EXECUTIVE CARD
+   ====================================================================== */
+function presalesExecCardHTML(o, T, activeLevel) {
+  const p = periodsOf(activeLevel)[view.idx < periodsOf(activeLevel).length ? view.idx : 0]
+          || periodsOf(activeLevel)[0];
+  const vals = psExecTargets(p);
+  const s = S.settings;
+  const psLeads = T.wa + T.convo;
+  const ratio   = T.leads > 0 ? psLeads / T.leads : 0;
+  const psUnits  = T.units  * ratio;
+  const psSales  = T.sales  * ratio;
+  const psRev    = psSales  * s.revRate / 100;
+  // Bookings = presales-driven units for period; only show if non-trivial
+  const bookings = psUnits > 0.01 ? num(psUnits) : "\u2013";
+  const bookingVal = psSales > 0.01 ? cr(psSales) : "\u2013";
+  const revVal   = psRev > 0.01 ? cr(psRev) : "\u2013";
+  const row = (lab, val) =>
+    `<div class="row"><span class="lab">${lab}</span><span class="val">${val}</span></div>`;
+  const pills = PS_EXEC_LEVELS.map(l =>
+    `<button type="button" class="ps-pill${l === activeLevel ? ' active' : ''}" data-pslevel="${l}">${PS_EXEC_LEVEL_NAMES[l]}</button>`
+  ).join("");
+  return `<article class="card t${o.tint} ps-exec" aria-label="Presales Executive target">
+    <div class="head">
+      <div><div class="name">${esc(o.title)}</div><div class="sub2">${esc(o.sub)}</div></div>
+      <span class="pill">Presales</span>
+    </div>
+    <div class="ps-pills">${pills}</div>
+    <div class="box"><div class="grid2">
+      <div>
+        ${row("Calls made:", num(vals.callsMade))}
+        ${row("Warm leads:", num(vals.warmLeads))}
+        ${row("Bookings:", bookings)}
+        ${row("Revenue @ 2%:", revVal)}
+      </div>
+      <div>
+        ${row("Calls connected:", num(vals.callsConnected))}
+        ${row("Site visits:", num(vals.siteVisits))}
+        ${row("Booking value:", bookingVal)}
+      </div>
+    </div></div>
+  </article>`;
+}
+
+/* ======================================================================
+   OVERVIEW
+   ====================================================================== */
+function renderOverview() {
+  const p = curPeriod(), D = periodData(p), T = D.total, A = D.ach, s = S.settings;
+
+  /* ── Presales Digital ── */
+  if (view.role === "presales-digital") {
+    $("viewSub").textContent = `${LV_NAME[p.level]} target · ${p.label}`;
+    // KPIs focused on presales digital channels
+    const psLeads = T.wa + T.convo;
+    const ratio   = T.leads > 0 ? psLeads / T.leads : 0;
+    const psUnits  = T.units  * ratio;
+    const psSales  = T.sales  * ratio;
+    const psRev    = psSales  * s.revRate / 100;
+    const k = (l, v, sub) => `<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${sub}</div></div>`;
+    $("kpis").innerHTML = [
+      k("Presales Units Target", num(psUnits), `via ConvoAI + WhatsApp (${s.wa + s.convo}% of leads)`),
+      k("Total Sales Value", cr(psSales), `Presales channel contribution`),
+      k(`Revenue @ ${s.revRate}%`, cr(psRev), `On presales channel sales`),
+      k("ConvoAI Leads (30%)", num(T.convo), `Out of ${num(T.leads)} total qualified leads`),
+      k("WhatsApp Leads (10%)", num(T.wa), `Out of ${num(T.leads)} total qualified leads`),
+      k("Total Presales Leads", num(psLeads), `ConvoAI + WhatsApp combined`)
+    ].join("");
+    $("funnelHint").textContent = "Presales Digital channels: ConvoAI and WhatsApp contribute " + (s.wa + s.convo) + "% of all qualified leads, driving presales unit targets.";
+    $("funnel").innerHTML = `
+      <div class="fstep"><div class="fl2">Total Leads (ConvoAI+WA)</div><div class="fv">${num(psLeads)}</div></div>
+      <div class="farrow">${s.leadConv}%<br>→</div>
+      <div class="fstep"><div class="fl2">Presales Walk-ins</div><div class="fv">${num(T.alloc * ratio)}</div></div>
+      <div class="farrow">${s.winRate}%<br>→</div>
+      <div class="fstep"><div class="fl2">Presales Units</div><div class="fv">${num(psUnits)}</div></div>
+      <div class="farrow">×<br>ticket</div>
+      <div class="fstep"><div class="fl2">Sales Value</div><div class="fv">${cr(psSales)}</div></div>`;
+    $("chanChips").innerHTML = `<span class="chip">ConvoAI ${s.convo}% · ${num(T.convo)} leads</span><span class="chip">WhatsApp ${s.wa}% · ${num(T.wa)} leads</span><span class="chip">Total presales leads ${num(psLeads)}</span>`;
+    // Cards: one per Sales Head showing their presales digital contribution
+    $("ovCards").innerHTML = SM_LIST.map((sm, i) =>
+      presalesDigitalCardHTML(
+        { title: sm, sub: D.bySm[sm].projects.map(b => b.name).join(", "), tint: i % 4 },
+        D.bySm[sm].m
+      )
+    ).join("");
+    // Tabs hidden for presales role
+    $("ovTabs").style.display = "none";
+    $("view-overview").querySelector("div.panel")?.style && ($("view-overview").querySelectorAll(".panel").forEach(el => el.style.display=""));
+    renderBreakdown(p);
+    return;
+  }
+
+  /* ── Presales Executive ── */
+  if (view.role === "presales-exec") {
+    $("viewSub").textContent = `All Lighthouse Luxury projects · ${PS_EXEC_LEVEL_NAMES[view.psExecLevel].toLowerCase()} view`;
+    const psLeads = T.wa + T.convo;
+    const ratio   = T.leads > 0 ? psLeads / T.leads : 0;
+    const psUnits  = T.units  * ratio;
+    const psSales  = T.sales  * ratio;
+    const psRev    = psSales  * s.revRate / 100;
+    // KPIs for exec: activity targets
+    const psPer = psExecTargets(p);
+    const k = (l, v, sub) => `<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${sub}</div></div>`;
+    $("kpis").innerHTML = [
+      k("Calls Made", num(psPer.callsMade), `${PS_EXEC_LEVEL_NAMES[view.psExecLevel]} target`),
+      k("Calls Connected", num(psPer.callsConnected), `${Math.round(psPer.callsConnected/psPer.callsMade*100)}% connect rate`),
+      k("Warm Leads", num(psPer.warmLeads), `${PS_EXEC_LEVEL_NAMES[view.psExecLevel]} warm-up target`),
+      k("Site Visits", num(psPer.siteVisits), `Qualified site visits`),
+      k("Bookings Target", psUnits > 0.01 ? num(psUnits) : "–", `Presales-driven units for period`),
+      k(`Revenue @ ${s.revRate}%`, psRev > 0.01 ? cr(psRev) : "–", `On presales bookings`)
+    ].join("");
+    $("funnelHint").textContent = "Presales Executive activity funnel: calls → connections → warm leads → site visits → bookings.";
+    $("funnel").innerHTML = `
+      <div class="fstep"><div class="fl2">Calls Made</div><div class="fv">${num(psPer.callsMade)}</div></div>
+      <div class="farrow">${Math.round(psPer.callsConnected/psPer.callsMade*100)}%<br>→</div>
+      <div class="fstep"><div class="fl2">Connected</div><div class="fv">${num(psPer.callsConnected)}</div></div>
+      <div class="farrow">→</div>
+      <div class="fstep"><div class="fl2">Warm Leads</div><div class="fv">${num(psPer.warmLeads)}</div></div>
+      <div class="farrow">→</div>
+      <div class="fstep"><div class="fl2">Site Visits</div><div class="fv">${num(psPer.siteVisits)}</div></div>`;
+    $("chanChips").innerHTML = `<span class="chip">Connect rate ${Math.round(psPer.callsConnected/psPer.callsMade*100)}%</span><span class="chip">Warm-lead rate ${Math.round(psPer.warmLeads/psPer.callsConnected*100)}%</span><span class="chip">Site-visit rate ${Math.round(psPer.siteVisits/psPer.warmLeads*100)}%</span>`;
+    // Cards: one per Sales Head showing exec activity targets
+    const execSub = `All Lighthouse Luxury projects · per ${view.psExecLevel}`;
+    $("ovCards").innerHTML = SM_LIST.map((sm, i) =>
+      presalesExecCardHTML(
+        { title: sm + " – Presales", sub: execSub, tint: i % 4 },
+        D.bySm[sm].m,
+        view.psExecLevel
+      )
+    ).join("");
+    $("ovTabs").style.display = "none";
+    renderBreakdown(p);
+    return;
+  }
+
+  /* ── Sales Head (original) ── */
+  $("ovTabs").style.display = "";
+  $("viewSub").textContent = `${LV_NAME[p.level]} target · ${p.label}` + (s.splitMode === "working" ? " · working days (Mon–Sat)" : " · calendar days");
+  const k = (l, v, sub) => `<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${sub}</div></div>`;
+  $("kpis").innerHTML = [
+    k("Sales units", num(T.units), `Achieved ${num(A.units)} (${pct(A.units, T.units)})`),
+    k("Sales value", cr(T.sales), `Achieved ${cr(A.sales)} (${pct(A.sales, T.sales)})`),
+    k(`Revenue @ ${s.revRate}%`, cr(T.revenue), `Achieved ${cr(A.revenue)}`),
+    k("Walk-ins", num(T.walk), `Achieved ${num(A.walk)} (${pct(A.walk, T.walk)})`),
+    k("Qualified leads required", num(T.leads), `${num(T.alloc)} allocated walk-ins × ${100 / s.leadConv}`)
+  ].join("");
+  $("funnelHint").textContent = "Each sale needs walk-ins; each allocated walk-in needs qualified leads. All numbers follow the conversion rules in Rules & Settings.";
+  $("funnel").innerHTML = `
+    <div class="fstep"><div class="fl2">Qualified leads</div><div class="fv">${num(T.leads)}</div></div>
+    <div class="farrow">${s.leadConv}%<br>→</div>
+    <div class="fstep"><div class="fl2">Allocated walk-ins (${100 - s.selfShare}%)</div><div class="fv">${num(T.alloc)}</div></div>
+    <div class="farrow">+ ${s.selfShare}%<br>self</div>
+    <div class="fstep"><div class="fl2">Total walk-ins</div><div class="fv">${num(T.walk)}</div></div>
+    <div class="farrow">${s.winRate}%<br>→</div>
+    <div class="fstep"><div class="fl2">Sales units</div><div class="fv">${num(T.units)}</div></div>`;
+  $("chanChips").innerHTML = `<span class="chip">WhatsApp ${s.wa}% · ${num(T.wa)}</span><span class="chip">ConvoAI ${s.convo}% · ${num(T.convo)}</span><span class="chip">Digital ${100 - s.wa - s.convo}% · ${num(T.digital)} (Meta ${s.metaShare}% · ${num(T.meta)} / Website ${100 - s.metaShare}% · ${num(T.web)})</span>`;
+
+  let html = "";
+  if (view.ovTab === "sm") {
+    html = SM_LIST.map((sm, i) => cardHTML({ title: sm, sub: D.bySm[sm].projects.map(b => b.name).join(", "), badge: "Sales Head", tint: i % 4, t: D.bySm[sm].m, a: D.bySm[sm].a })).join("");
+  } else if (view.ovTab === "project") {
+    html = BASE_PROJECTS.map(b => cardHTML({ title: b.name, sub: `SM: ${b.sm} · Ticket ₹${b.ticket} Cr`, badge: "Project", tint: SM_LIST.indexOf(b.sm) % 4, t: D.perProject[b.id].m, a: D.perProject[b.id].a })).join("");
+  } else {
+    SM_LIST.forEach((sm, i) => {
+      S.team[sm].forEach(mem => {
+        const f = mem.pct / 100, m = ZERO(); addM(m, D.bySm[sm].m, f);
+        html += cardHTML({ title: mem.name, sub: `Team of ${sm} · ${mem.pct}% share`, badge: mem.role, tint: i % 4, t: m, a: scaleAch(D.bySm[sm].a, f) });
+      });
+    });
+  }
+  $("ovCards").innerHTML = html;
+  renderBreakdown(p);
+}
+
+function renderBreakdown(p) {
+  const finer = { year: "quarter", quarter: "month", month: "week", week: "day" }[p.level];
+  if (!finer) { $("bdTitle").textContent = "Breakdown"; $("bdHint").textContent = ""; $("breakdown").innerHTML = '<p class="hint">A single day cannot be split further. Switch to Month, Quarter or Year to see the breakdown.</p>'; return; }
+  const subs = periodsOf(finer).filter(q => q.end >= p.start && q.start <= p.end).map(q => ({ ...q, start: Math.max(q.start, p.start), end: Math.min(q.end, p.end), clipped: q.start < p.start || q.end > p.end }));
+  $("bdTitle").textContent = `${LV_NAME[finer]}-wise breakdown of ${p.label}`;
+  $("bdHint").textContent = S.settings.unitMode === "whole" ? "Whole units. The parts are rounded so they add up exactly to the total." : "Exact values. Switch to whole units in Rules & Settings if you need integers.";
+  const per = {};
+  BASE_PROJECTS.forEach(b => {
+    let vals = subs.map(q => sumRange(b.id, q.start, q.end));
+    if (S.settings.unitMode === "whole") vals = lrm(vals, Math.round(unitsOf(b.id, p)));
+    per[b.id] = vals;
+  });
+  const rows = subs.map((q, i) => {
+    const m = ZERO(); BASE_PROJECTS.forEach(b => addM(m, derive(per[b.id][i], ticketOf(b.id))));
+    return { q, m };
+  });
+  const tot = ZERO(); rows.forEach(r => addM(tot, r.m));
+  const maxS = Math.max(...rows.map(r => r.m.sales), 0.0001);
+  $("breakdown").innerHTML = `<table><thead><tr><th scope="col">${LV_NAME[finer]}</th><th scope="col">Units</th><th scope="col">Sales value</th><th scope="col">Revenue</th><th scope="col">Walk-ins</th><th scope="col">Qualified leads</th><th scope="col" class="l">Share</th></tr></thead><tbody>${
+    rows.map(r => `<tr><td>${esc(r.q.label)}${r.q.clipped ? " *" : ""}</td><td>${num(r.m.units)}</td><td>${cr(r.m.sales)}</td><td>${cr(r.m.revenue)}</td><td>${num(r.m.walk)}</td><td>${num(r.m.leads)}</td><td class="l"><span class="mini" style="width:${Math.max(2, r.m.sales / maxS * 120)}px" aria-hidden="true"></span></td></tr>`).join("")
+  }</tbody><tfoot><tr class="total"><td>Total</td><td>${num(tot.units)}</td><td>${cr(tot.sales)}</td><td>${cr(tot.revenue)}</td><td>${num(tot.walk)}</td><td>${num(tot.leads)}</td><td></td></tr></tfoot></table>${rows.some(r => r.q.clipped) ? '<p class="hint" style="margin-top:8px">* Partial period: only the days inside the selected range are counted.</p>' : ""}`;
+}
+
+/* ======================================================================
+   SET TARGET
+   ====================================================================== */
+const form = { scope: "project", target: "khar", level: "month", idx: 0, date: null, units: 1, ticket: 15, mode: "fit" };
+function formPeriod() {
+  const yr = yearRange(S.settings.fyYear);
+  if (form.level === "day") {
+    const t = Math.min(Math.max(form.date || yr.start, yr.start), yr.end);
+    return { level: "day", start: t, end: t, fullStart: t, fullEnd: t, label: fmtDY(t) };
+  }
+  const list = periodsOf(form.level);
+  return list[Math.min(form.idx, list.length - 1)];
+}
+function buildSetForm() {
+  $("fScope").value = form.scope;
+  const tw = $("fTargetWrap");
+  if (form.scope === "company") tw.style.visibility = "hidden";
+  else {
+    tw.style.visibility = "visible";
+    const opts = form.scope === "project" ? BASE_PROJECTS.map(b => [b.id, `${b.name} (${b.sm})`]) : SM_LIST.map(s => [s, s]);
+    if (!opts.find(o => o[0] === form.target)) form.target = opts[0][0];
+    tw.innerHTML = `<label class="fl" for="fTarget">${form.scope === "project" ? "Project" : "Sales head"}</label><select id="fTarget">${opts.map(o => `<option value="${esc(o[0])}"${o[0] === form.target ? " selected" : ""}>${esc(o[1])}</option>`).join("")}</select>`;
+    $("fTarget").addEventListener("change", e => { form.target = e.target.value; syncTicket(); renderPreview(); });
+  }
+  document.querySelectorAll("#fLevel button").forEach(b => b.setAttribute("aria-pressed", b.dataset.level === form.level));
+  const pw = $("fPeriodWrap"), yr = yearRange(S.settings.fyYear);
+  if (form.level === "year") pw.innerHTML = `<span class="chip">${yearLabel(S.settings.fyYear)} · ${fmtDY(yr.start)} – ${fmtDY(yr.end)}</span>`;
+  else if (form.level === "day") pw.innerHTML = `<label class="fl" for="fDate">Date</label><input type="date" id="fDate" min="${isoOf(yr.start)}" max="${isoOf(yr.end)}" value="${isoOf(formPeriod().start)}">`;
+  else pw.innerHTML = `<label class="fl" for="fPeriod">${LV_NAME[form.level]}</label><select id="fPeriod">${periodsOf(form.level).map(q => `<option value="${q.idx}"${q.idx === form.idx ? " selected" : ""}>${esc(q.label)}</option>`).join("")}</select>`;
+  const fp = $("fPeriod"); if (fp) fp.addEventListener("change", e => { form.idx = +e.target.value; renderPreview(); });
+  const fd = $("fDate"); if (fd) fd.addEventListener("change", e => { if (e.target.value) { form.date = fromIso(e.target.value); renderPreview(); } });
+  $("fTicketWrap").style.visibility = form.scope === "project" ? "visible" : "hidden";
+  $("fUnits").value = form.units;
+  syncTicket();
+  renderPreview();
+}
+function syncTicket() { if (form.scope === "project" && S.projects[form.target]) { form.ticket = ticketOf(form.target); $("fTicket").value = form.ticket; } }
+
+/* Split a typed unit total across projects by their current share in that period */
+function allocationFor(units, p) {
+  const ids = form.scope === "project" ? [form.target] : (form.scope === "sm" ? BASE_PROJECTS.filter(b => b.sm === form.target).map(b => b.id) : BASE_PROJECTS.map(b => b.id));
+  if (ids.length === 1) return [{ pid: ids[0], units }];
+  const yr = yearRange(S.settings.fyYear);
+  let w = ids.map(id => sumRange(id, p.start, p.end)), sw = w.reduce((a, b) => a + b, 0);
+  if (sw <= 0) { w = ids.map(id => sumRange(id, yr.start, yr.end)); sw = w.reduce((a, b) => a + b, 0); }
+  if (sw <= 0) { w = ids.map(() => 1); sw = ids.length; }
+  return ids.map((id, i) => ({ pid: id, units: units * w[i] / sw }));
+}
+function renderPreview() {
+  const p = formPeriod(), units = Math.max(0, parseFloat($("fUnits").value) || 0);
+  const alloc = allocationFor(units, p), m = ZERO();
+  alloc.forEach(a => addM(m, derive(a.units, form.scope === "project" && a.pid === form.target && parseFloat($("fTicket").value) > 0 ? parseFloat($("fTicket").value) : ticketOf(a.pid))));
+  $("pvHint").textContent = `${LV_NAME[p.level]} target for ${p.label}`;
+  const yr = yearRange(S.settings.fyYear), Wp = weightSum(p.fullStart, p.fullEnd) || (p.fullEnd - p.fullStart) / DAY + 1;
+  const perDay = units / Wp, Wy = weightSum(yr.start, yr.end);
+  const yearly = p.level === "year" ? units : perDay * Wy;
+  const lad = [["Per year", yearly], ["Per month (avg)", yearly / 12], ["Per week (avg)", yearly / (yr.n / 7)], ["Per day (avg)", yearly / yr.n]];
+  const cur = alloc.reduce((a, x) => a + sumRange(x.pid, p.start, p.end), 0);
+  $("pvBody").innerHTML = `
+    <p class="hint" style="margin-top:-6px">Currently set for this period: <b>${num(cur)}</b> units.</p>
+    <div class="ladder">${lad.map(l => `<div><b>${num(l[1])}</b><span>${l[0]}</span></div>`).join("")}</div>
+    <p class="hint">Pro-rata equivalent units if this pace is held for the whole ${yearLabel(S.settings.fyYear)}.</p>
+    <table><tbody>
+      <tr><td>Sales value</td><td><b>${cr(m.sales)}</b></td></tr>
+      <tr><td>Revenue @ ${S.settings.revRate}%</td><td><b>${cr(m.revenue)}</b></td></tr>
+      <tr><td>Walk-ins</td><td><b>${num(m.walk)}</b> (${num(m.self)} self + ${num(m.alloc)} allocated)</td></tr>
+      <tr><td>Qualified leads</td><td><b>${num(m.leads)}</b></td></tr>
+      <tr><td>WhatsApp / ConvoAI / Digital</td><td>${num(m.wa)} / ${num(m.convo)} / ${num(m.digital)}</td></tr>
+      <tr><td>Meta / Website</td><td>${num(m.meta)} / ${num(m.web)}</td></tr>
+    </tbody></table>
+    ${alloc.length > 1 ? `<h3 style="font-size:.85rem;margin:14px 0 6px">Split across projects</h3><table><tbody>${alloc.map(a => `<tr><td>${esc(projOf(a.pid).name)}</td><td>${num(a.units)} units</td><td>${cr(a.units * ticketOf(a.pid))}</td></tr>`).join("")}</tbody></table>` : ""}`;
+}
+function saveTarget() {
+  const p = formPeriod(), units = parseFloat($("fUnits").value);
+  if (!isFinite(units) || units < 0) { toast("Enter a valid number of units."); return; }
+  if (form.scope === "project") {
+    const t = parseFloat($("fTicket").value);
+    if (t > 0) S.projects[form.target].ticket = t;
+  }
+  const alloc = allocationFor(units, p);
+  const startIso = isoOf(p.level === "year" ? p.start : p.fullStart);
+  alloc.forEach(a => {
+    const before = sumRange(a.pid, p.start, p.end);
+    const found = S.entries.find(e => e.projectId === a.pid && e.level === p.level && (p.level === "year" ? e.fy === S.settings.fyYear : e.start === startIso));
+    if (found) found.units = a.units;
+    else S.entries.push({ id: S.nextId++, projectId: a.pid, level: p.level, start: startIso, fy: S.settings.fyYear, units: a.units });
+    if (form.mode === "add") {
+      const delta = a.units - before;
+      S.entries.filter(e => e.projectId === a.pid && LV[e.level] > LV[p.level]).forEach(e => {
+        const r = rangeOf(e);
+        if (r.start <= p.fullStart && r.end >= p.fullEnd) e.units = Math.max(0, e.units + delta);
+      });
+    }
+  });
+  persist(); renderTargetLog(); renderPreview();
+  toast(`Saved ${LV_NAME[p.level].toLowerCase()} target for ${p.label}.`);
+}
+function renderTargetLog() {
+  const rows = [...S.entries].sort((a, b) => LV[b.level] - LV[a.level] || a.projectId.localeCompare(b.projectId) || (a.start || "").localeCompare(b.start || ""));
+  BASE_PROJECTS.forEach(b => daily(b.id));
+  const conf = []; BASE_PROJECTS.forEach(b => conf.push(...daily(b.id).conflicts));
+  $("conflicts").innerHTML = conf.length ? `<div class="note">${conf.map(c => `${esc(projOf(c.projectId).name)}: smaller periods add up to ${num(c.smaller)} units, which is above the bigger period's ${num(c.target)}. The bigger period's total is effectively raised.`).join("<br>")}</div>` : "";
+  $("targetLog").innerHTML = `<table><thead><tr><th scope="col">Project</th><th scope="col" class="l">Level</th><th scope="col" class="l">Period</th><th scope="col">Units</th><th scope="col">Sales value</th><th scope="col"><span class="sr">Actions</span></th></tr></thead><tbody>${
+    rows.map(e => { const r = rangeOf(e); const label = e.level === "year" ? yearLabel(e.fy) : e.level === "month" ? MON[new Date(r.start).getUTCMonth()] + " " + new Date(r.start).getUTCFullYear() : e.level === "week" ? `${fmtD(r.start)} – ${fmtD(r.end)} ${new Date(r.end).getUTCFullYear()}` : fmtDY(r.start);
+      return `<tr><td>${esc(projOf(e.projectId).name)}</td><td class="l">${LV_NAME[e.level]}</td><td class="l">${esc(label)}</td><td>${num(e.units)}</td><td>${cr(e.units * ticketOf(e.projectId))}</td><td><button type="button" class="btn danger sm" data-del="${e.id}" aria-label="Remove ${esc(projOf(e.projectId).name)} ${LV_NAME[e.level]} target ${esc(label)}">Remove</button></td></tr>`; }).join("")
+  }</tbody></table>`;
+}
+
+/* ======================================================================
+   TEAM ALLOCATION
+   ====================================================================== */
+function renderTeam() {
+  const sm = view.teamSm, p = curPeriod(), D = periodData(p), M = D.bySm[sm].m, team = S.team[sm];
+  $("viewSub").textContent = `${LV_NAME[p.level]} target · ${p.label}`;
+  $("tSm").innerHTML = SM_LIST.map(s => `<option${s === sm ? " selected" : ""}>${esc(s)}</option>`).join("");
+  document.querySelectorAll("#tMode button").forEach(b => b.setAttribute("aria-pressed", b.dataset.mode === view.teamMode));
+  const total = team.reduce((a, m) => a + (+m.pct || 0), 0), okSum = Math.abs(total - 100) < 0.05;
+  $("teamSummary").innerHTML = `<span class="chip">${esc(sm)} target: ${num(M.units)} units · ${cr(M.sales)}</span> <span class="chip ${okSum ? "ok" : "warn"}">Shares total ${Math.round(total * 100) / 100}%${okSum ? "" : " (should be 100%)"}</span>`;
+  $("teamTable").innerHTML = `<table><thead><tr><th scope="col">Team member</th><th scope="col" class="l">Role</th><th scope="col">${view.teamMode === "units" ? "Units" : "Share %"}</th><th scope="col">Units</th><th scope="col">Sales value</th><th scope="col">Revenue</th><th scope="col">Walk-ins</th><th scope="col">Leads</th><th scope="col"><span class="sr">Remove</span></th></tr></thead><tbody>${
+    team.map(mem => { const f = mem.pct / 100; const roles = ["Sales Head", "Sales Executive", "Telecaller", "Marketing"];
+      const shareVal = view.teamMode === "units" ? Math.round(M.units * f * 100) / 100 : Math.round(mem.pct * 100) / 100;
+      return `<tr><td class="l"><input type="text" data-f="name" data-id="${mem.id}" value="${esc(mem.name)}" aria-label="Name"></td>
+      <td class="l"><select data-f="role" data-id="${mem.id}" aria-label="Role for ${esc(mem.name)}">${roles.map(r => `<option${r === mem.role ? " selected" : ""}>${r}</option>`).join("")}</select></td>
+      <td><input type="number" min="0" step="0.01" style="width:90px" data-f="share" data-id="${mem.id}" value="${shareVal}" ${view.teamMode === "equal" ? "disabled" : ""} aria-label="${view.teamMode === "units" ? "Units" : "Share percent"} for ${esc(mem.name)}"></td>
+      <td>${num(M.units * f)}</td><td>${cr(M.sales * f)}</td><td>${cr(M.revenue * f)}</td><td>${num(M.walk * f)}</td><td>${num(M.leads * f)}</td>
+      <td><button type="button" class="btn danger sm" data-rm="${mem.id}" ${team.length < 2 ? "disabled" : ""} aria-label="Remove ${esc(mem.name)}">Remove</button></td></tr>`; }).join("")
+  }</tbody><tfoot><tr class="total"><td>Total</td><td></td><td>${Math.round(total * 100) / 100}%</td><td>${num(M.units * total / 100)}</td><td>${cr(M.sales * total / 100)}</td><td>${cr(M.revenue * total / 100)}</td><td>${num(M.walk * total / 100)}</td><td>${num(M.leads * total / 100)}</td><td></td></tr></tfoot></table>`;
+  $("tree").innerHTML = `<b>Lighthouse Luxury</b> · ${cr(D.total.sales)}<ul>${SM_LIST.map(s => `<li><b>${esc(s)}</b> · ${cr(D.bySm[s].m.sales)}<ul>${D.bySm[s].projects.map(b => `<li>${esc(b.name)} · ${cr(D.perProject[b.id].m.sales)}</li>`).join("")}<li><i>Team (${S.team[s].length})</i>: ${S.team[s].map(m => esc(m.name) + " " + Math.round(m.pct * 10) / 10 + "%").join(", ")}</li></ul></li>`).join("")}</ul>`;
+}
+function setEqual(sm) { const t = S.team[sm]; t.forEach(m => { m.pct = 100 / t.length; }); }
+
+/* ======================================================================
+   SETTINGS
+   ====================================================================== */
+function renderSettings() {
+  const s = S.settings;
+  const nf = (k, label, hint, step = 1) => `<div><label class="fl" for="s_${k}">${label}</label><input type="number" id="s_${k}" data-s="${k}" value="${s[k]}" min="0" max="100" step="${step}"><div class="hint" style="margin:3px 0 0">${hint}</div></div>`;
+  const pse = (k, label, hint) => `<div><label class="fl" for="pse_${k}">${label}</label><input type="number" id="pse_${k}" data-pse="${k}" value="${S.psExec[k]}" min="0" step="1"><div class="hint" style="margin:3px 0 0">${hint}</div></div>`;
+  $("viewSub").textContent = "Rules that turn sales units into walk-ins and leads";
+  $("rules").innerHTML = [
+    nf("revRate", "Revenue rate (%)", "Revenue = % of sales value", .1),
+    nf("winRate", "Walk-in to sale (%)", "15% means 6.67 walk-ins per sale", .5),
+    nf("selfShare", "Self-generated walk-ins (%)", "Rest are allocated by the company"),
+    nf("leadConv", "Lead to allocated walk-in (%)", "20% means 5 leads per walk-in"),
+    nf("wa", "WhatsApp share of leads (%)", "Digital is what remains"),
+    nf("convo", "ConvoAI share of leads (%)", "WhatsApp + ConvoAI must be under 100"),
+    nf("metaShare", "Meta share of Digital (%)", "Website is the rest")
+  ].join("");
+  $("calSet").innerHTML = `
+    <div><label class="fl" for="s_yearType">Year type</label><select id="s_yearType" data-s="yearType"><option value="FY"${s.yearType === "FY" ? " selected" : ""}>Financial year (Apr \u2013 Mar)</option><option value="CY"${s.yearType === "CY" ? " selected" : ""}>Calendar year (Jan \u2013 Dec)</option></select></div>
+    <div><label class="fl" for="s_unitMode">Units shown as</label><select id="s_unitMode" data-s="unitMode"><option value="exact"${s.unitMode === "exact" ? " selected" : ""}>Exact decimals</option><option value="whole"${s.unitMode === "whole" ? " selected" : ""}>Whole units (parts add up)</option></select></div>`;
+  $("projSet").innerHTML = `<table><thead><tr><th scope="col">Project</th><th scope="col" class="l">Sales head</th><th scope="col">Ticket size (₹ Cr)</th></tr></thead><tbody>${
+    BASE_PROJECTS.map(b => `<tr><td>${esc(b.name)}</td><td class="l">${esc(b.sm)}</td><td><input type="number" min="0" step="0.5" style="width:100px" data-ticket="${b.id}" value="${ticketOf(b.id)}" aria-label="Ticket size for ${esc(b.name)}"></td></tr>`).join("")}</tbody></table>`;
+  // Presales Executive weekly activity targets
+  $("psexecSet").innerHTML = [
+    pse("weekCallsMade", "Weekly calls made (target)", "Total outbound calls per week for Presales Executive"),
+    pse("weekCallsConnected", "Weekly calls connected", "Connected calls out of total made"),
+    pse("weekWarmLeads", "Weekly warm leads", "Leads qualified as warm/interested after call"),
+    pse("weekSiteVisits", "Weekly site visits", "Prospects who visit a project site")
+  ].join("");
+}
+
+/* ======================================================================
+   NAVIGATION + PERIOD BAR
+   ====================================================================== */
+const TITLES = { overview: "Target Overview", set: "Set Target", team: "Team Allocation", settings: "Rules & Settings" };
+const ROLE_LABELS = { "saleshead": "Sales Head", "presales-digital": "Presales \u2013 Digital", "presales-exec": "Presales Executive" };
+
+function applyRoleNav() {
+  const role = view.role;
+  // show/hide nav items based on allowed roles
+  document.querySelectorAll(".nav button[data-roles]").forEach(b => {
+    const allowed = (b.dataset.roles || "").split(",");
+    b.style.display = allowed.includes(role) ? "" : "none";
+  });
+  // update topbar role badge
+  const badge = $("roleBadge"); if (badge) badge.textContent = ROLE_LABELS[role] || role;
+  // sync sidebar role switcher active states
+  document.querySelectorAll("#roleSwitcher button[data-role]").forEach(b => {
+    b.classList.toggle("active", b.dataset.role === role);
+  });
+}
+
+function renderPeriodBar() {
+  const py = $("pickYear"); const y = S.settings.fyYear;
+  py.innerHTML = [y - 1, y, y + 1].map(v => `<option value="${v}"${v === y ? " selected" : ""}>${yearLabel(v)}</option>`).join("");
+  document.querySelectorAll("#levelSeg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.level === view.level));
+  const w = $("pickWrap"), yr = yearRange(y);
+  if (view.level === "year") w.innerHTML = "";
+  else if (view.level === "day") w.innerHTML = `<label class="fl" for="pickDay">Date</label><input type="date" id="pickDay" min="${isoOf(yr.start)}" max="${isoOf(yr.end)}" value="${isoOf(curPeriod().start)}">`;
+  else w.innerHTML = `<label class="fl" for="pickPeriod">${LV_NAME[view.level]}</label><select id="pickPeriod">${periodsOf(view.level).map(q => `<option value="${q.idx}"${q.idx === view.idx ? " selected" : ""}>${esc(q.label)}</option>`).join("")}</select>`;
+}
+function show(screen) {
+  view.screen = screen;
+  document.querySelectorAll(".view").forEach(v => { v.hidden = v.id !== "view-" + screen; });
+  document.querySelectorAll(".nav button").forEach(b => { if (b.dataset.view === screen) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+  $("viewTitle").textContent = TITLES[screen];
+  $("periodBar").style.display = (screen === "overview" || screen === "team") ? "flex" : "none";
+  applyRoleNav();
+  refresh();
+}
+function refresh() {
+  if (view.screen === "overview" || view.screen === "team") renderPeriodBar();
+  if (view.screen === "overview") renderOverview();
+  if (view.screen === "set") { $("viewSub").textContent = "Set a target at any level; other levels are converted for you"; buildSetForm(); renderTargetLog(); }
+  if (view.screen === "team") renderTeam();
+  if (view.screen === "settings") renderSettings();
+}
+
+/* ======================================================================
+   EVENTS
+   ====================================================================== */
+document.querySelectorAll(".nav button").forEach(b => b.addEventListener("click", () => show(b.dataset.view)));
+$("themeBtn").addEventListener("click", () => {
+  const on = document.documentElement.classList.toggle("dark");
+  $("themeBtn").setAttribute("aria-pressed", on); $("themeBtn").textContent = on ? "Light mode" : "Dark mode";
+});
+
+/* Role switcher */
+$("roleSwitcher").addEventListener("click", e => {
+  const b = e.target.closest("button[data-role]"); if (!b) return;
+  view.role = b.dataset.role;
+  // reset psExecLevel when entering exec role
+  if (view.role === "presales-exec") view.psExecLevel = "week";
+  applyRoleNav();
+  if (view.screen !== "overview" && view.role !== "saleshead") show("overview"); else refresh();
+});
+
+/* Presales Executive period pills (delegated from ovCards) */
+$("ovCards").addEventListener("click", e => {
+  const b = e.target.closest("button[data-pslevel]"); if (!b) return;
+  if (view.role !== "presales-exec") return;
+  view.psExecLevel = b.dataset.pslevel;
+  renderOverview();
+});
+$("levelSeg").addEventListener("click", e => {
+  const b = e.target.closest("button[data-level]"); if (!b) return;
+  view.level = b.dataset.level; view.idx = defaultIdx(view.level); refresh();
+});
+$("pickYear").addEventListener("change", e => {
+  S.settings.fyYear = +e.target.value; persist();
+  view.idx = defaultIdx(view.level); form.idx = 0; form.date = null; refresh();
+});
+$("pickWrap").addEventListener("change", e => {
+  if (e.target.id === "pickPeriod") view.idx = +e.target.value;
+  if (e.target.id === "pickDay" && e.target.value) { const t = fromIso(e.target.value); view.idx = Math.round((t - yearRange(S.settings.fyYear).start) / DAY); }
+  refresh();
+});
+$("ovTabs").addEventListener("click", e => {
+  const b = e.target.closest("button[data-tab]"); if (!b) return;
+  view.ovTab = b.dataset.tab;
+  document.querySelectorAll("#ovTabs button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  renderOverview();
+});
+
+/* Set target screen */
+$("fScope").addEventListener("change", e => { form.scope = e.target.value; form.target = form.scope === "project" ? "khar" : SM_LIST[0]; buildSetForm(); });
+$("fLevel").addEventListener("click", e => {
+  const b = e.target.closest("button[data-level]"); if (!b) return;
+  form.level = b.dataset.level; form.idx = form.level === "year" ? 0 : defaultIdx(form.level); form.date = null; buildSetForm();
+});
+$("fUnits").addEventListener("input", renderPreview);
+$("fTicket").addEventListener("input", renderPreview);
+document.querySelectorAll('input[name="fMode"]').forEach(r => r.addEventListener("change", e => { form.mode = e.target.value; }));
+$("fSave").addEventListener("click", saveTarget);
+$("targetLog").addEventListener("click", e => {
+  const b = e.target.closest("button[data-del]"); if (!b) return;
+  S.entries = S.entries.filter(x => x.id !== +b.dataset.del); persist(); renderTargetLog(); renderPreview(); toast("Target removed.");
+});
+
+/* Team screen */
+$("tSm").addEventListener("change", e => { view.teamSm = e.target.value; renderTeam(); });
+$("tMode").addEventListener("click", e => {
+  const b = e.target.closest("button[data-mode]"); if (!b) return;
+  view.teamMode = b.dataset.mode;
+  if (view.teamMode === "equal") { setEqual(view.teamSm); persist(); }
+  renderTeam();
+});
+$("teamTable").addEventListener("change", e => {
+  const el = e.target, id = el.dataset.id, mem = S.team[view.teamSm].find(m => m.id === id);
+  if (el.dataset.rm || !mem) return;
+  if (el.dataset.f === "name") mem.name = el.value.trim() || mem.name;
+  if (el.dataset.f === "role") mem.role = el.value;
+  if (el.dataset.f === "share") {
+    const v = Math.max(0, parseFloat(el.value) || 0);
+    if (view.teamMode === "units") { const U = periodData(curPeriod()).bySm[view.teamSm].m.units; mem.pct = U > 0 ? v / U * 100 : 0; }
+    else mem.pct = v;
+  }
+  persist(); renderTeam();
+});
+$("teamTable").addEventListener("click", e => {
+  const b = e.target.closest("button[data-rm]"); if (!b) return;
+  const t = S.team[view.teamSm]; if (t.length < 2) return;
+  S.team[view.teamSm] = t.filter(m => m.id !== b.dataset.rm); persist(); renderTeam(); toast("Team member removed. Use Auto-balance to make shares total 100%.");
+});
+$("tAdd").addEventListener("click", () => {
+  const t = S.team[view.teamSm];
+  t.push({ id: "m" + (S.nextId++), name: view.teamSm + " · New member", role: "Sales Executive", pct: 0 });
+  persist(); renderTeam(); toast("Team member added. Set a share.");
+});
+$("tBalance").addEventListener("click", () => {
+  const t = S.team[view.teamSm], total = t.reduce((a, m) => a + m.pct, 0);
+  if (total <= 0) setEqual(view.teamSm); else t.forEach(m => { m.pct = m.pct / total * 100; });
+  persist(); renderTeam(); toast("Shares balanced to 100%.");
+});
+
+/* Settings screen */
+function onSetting(e) {
+  const el = e.target;
+  if (el.dataset.s) {
+    const k = el.dataset.s;
+    S.settings[k] = ["yearType", "splitMode", "unitMode"].includes(k) ? el.value : Math.max(0, parseFloat(el.value) || 0);
+    if (S.settings.wa + S.settings.convo > 100) { toast("WhatsApp + ConvoAI cannot exceed 100%."); S.settings[k] = DEFAULT_SETTINGS[k]; }
+    if (["winRate", "leadConv"].includes(k) && S.settings[k] <= 0) S.settings[k] = DEFAULT_SETTINGS[k];
+    persist();
+    if (k === "yearType") { view.idx = defaultIdx(view.level); form.idx = 0; }
+    renderSettings(); toast("Setting updated. Every screen now uses it.");
+  }
+  if (el.dataset.ticket) { const v = parseFloat(el.value); if (v > 0) { S.projects[el.dataset.ticket].ticket = v; persist(); toast("Ticket size updated."); } }
+  if (el.dataset.pse) {
+    const k = el.dataset.pse, v = Math.max(0, parseFloat(el.value) || 0);
+    S.psExec[k] = v; persistPsExec(); toast("Presales Executive target updated.");
+  }
+}
+$("view-settings").addEventListener("change", onSetting);
+$("resetAll").addEventListener("click", () => {
+  if (!confirm("Reset all targets, team splits and settings to the spreadsheet values?")) return;
+  S = freshState(); persist(); view.idx = defaultIdx(view.level); refresh(); toast("Demo reset.");
+});
+
+const srStyle = document.createElement("style");
+srStyle.textContent = ".sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}";
+document.head.appendChild(srStyle);
+form.idx = defaultIdx("month");
+show("overview");
+</script>
+</body>
+</html>
