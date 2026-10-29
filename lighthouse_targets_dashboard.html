@@ -102,7 +102,7 @@
 <body>
 <header class="top">
   <h1>LIGHTHOUSE LUXURY | TARGETS DASHBOARD</h1>
-  <p>Project-wise sales &amp; lead targets from Lighthouse_MVT_Project_Targets.xlsx. Channel mix: WhatsApp 10%, ConvoAI 30%, Digital 60% (Meta 60% / Website 40% of Digital).</p>
+  <p>Project-wise sales &amp; lead targets. Targets come from the MVT target master; achieved values are computed live from leads &amp; bookings. Channel mix: WhatsApp 10%, ConvoAI 30%, Digital 60% (Meta 60% / Website 40% of Digital).</p>
 </header>
 
 <main>
@@ -117,15 +117,17 @@
   </div>
 
   <div role="tabpanel" id="panel-dash" aria-labelledby="tab-dash">
-    <div class="actions">
-      <button class="btn" id="resetBtn" type="button">Reset achieved values</button>
-      <span class="hint" style="margin:0">The xlsx has targets only. Enter achieved values in the project cards; they are saved in this browser and rolled up into the Sourcing Manager cards.</span>
+    <div class="actions" id="apiBar">
+      <input id="apiBase" type="text" placeholder="API base e.g. https://devlighthouse.absolutecx.com" style="min-width:320px;font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:8px" aria-label="API base URL">
+      <input id="apiToken" type="password" placeholder="auth token" style="min-width:160px;font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:8px" aria-label="Auth token">
+      <button class="btn" id="loadBtn" type="button">Load live data</button>
+      <span class="hint" id="apiStatus" style="margin:0">Enter the API base + token, then Load live data. Targets and achieved values are read from the backend.</span>
     </div>
     <h2 class="sec">Sourcing Managers</h2>
     <p class="hint">Achieved values are the sum of that manager's project cards.</p>
     <div class="cards" id="smCards"></div>
     <h2 class="sec">Projects / Retail locations</h2>
-    <p class="hint">Edit the achieved figure in each box. Revenue achieved is calculated at 2% of achieved sales value.</p>
+    <p class="hint">Achieved figures are read live from leads &amp; bookings. Revenue achieved is calculated at 2% of achieved sales value.</p>
     <div class="cards" id="projCards"></div>
   </div>
 
@@ -156,9 +158,13 @@
 </main>
 
 <script>
-/* ---------- Source data (Project Targets sheet) ---------- */
-const PROJECTS = [
-  // name, sm, units, ticket(₹), walkins, selfGen, allocated, qualified, whatsapp, convo, digital, meta, website
+/* ---------- Source data ----------
+   Targets + achieved come from the backend:
+     POST {apiBase}/v1/retail/mvt-target/dashboard/overview
+   Until data is loaded we show the MVT sample rows below (same shape) so the
+   page is never blank. loadLive() replaces PROJECTS/SM_ORDER from the API. */
+const SAMPLE_PROJECTS = [
+  // name, salesHead, units, ticket(₹), walkins, selfGen, allocated, qualified, whatsapp, convo, digital, meta, website
   ["Khar Santa",  "Varun J",  6, 150000000,  40,  8, 32, 160, 16, 48,  96, 58, 38],
   ["Bandra West", "Varun J",  6, 150000000,  40,  8, 32, 160, 16, 48,  96, 58, 38],
   ["Bandra Bay",  "Dheeraj",  8, 250000000,  53, 11, 43, 213, 21, 64, 128, 77, 51],
@@ -172,9 +178,16 @@ const PROJECTS = [
   qualified: r[7], wa: r[8], convo: r[9], digital: r[10], meta: r[11], web: r[12],
   sales: r[2] * r[3], revenue: r[2] * r[3] * 0.02
 }));
-const SM_ORDER = ["Varun J", "Dheeraj", "Dhara", "Mohit D"];
 const CR = 1e7;
 const REV_RATE = 0.02;
+
+/* Live (API-sourced) achieved values keyed by project name. Populated by loadLive().
+   When empty the cards show 0 achieved (no browser-entered values anymore). */
+let LIVE_ACHIEVED = {}; // { [projectName]: { units, salesCr, walkins, selfGen, alloc } }
+
+/* Mutable working set — starts from sample, replaced by the API on load. */
+let PROJECTS = SAMPLE_PROJECTS;
+let SM_ORDER = [...new Set(PROJECTS.map(p => p.sm))];
 
 /* ---------- Helpers ---------- */
 const sum = (arr, k) => arr.reduce((a, p) => a + p[k], 0);
@@ -188,23 +201,25 @@ function aggregate(list) {
   list.forEach(p => Object.keys(o).forEach(k => { o[k] += p[k]; }));
   return o;
 }
-const TOTAL = aggregate(PROJECTS);
-const smList = SM_ORDER.map(name => {
-  const ps = PROJECTS.filter(p => p.sm === name);
-  return { name, projects: ps, ...aggregate(ps) };
-});
-
-/* ---------- Achieved state (saved in this browser only) ---------- */
-const STORE_KEY = "lighthouse_targets_achieved_v1";
-const FIELDS = ["units", "salesCr", "walkins", "selfGen", "alloc"];
-let achieved = {};
-try { achieved = JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch (e) { achieved = {}; }
-const getA = (proj, f) => Number((achieved[proj] || {})[f]) || 0;
-function setA(proj, f, v) {
-  achieved[proj] = achieved[proj] || {};
-  achieved[proj][f] = v;
-  try { localStorage.setItem(STORE_KEY, JSON.stringify(achieved)); } catch (e) { /* storage unavailable */ }
+/* TOTAL + smList are recomputed whenever PROJECTS changes (after an API load). */
+let TOTAL = aggregate(PROJECTS);
+let smList = [];
+function recomputeRollups() {
+  SM_ORDER = [...new Set(PROJECTS.map(p => p.sm))];
+  TOTAL = aggregate(PROJECTS);
+  smList = SM_ORDER.map(name => {
+    const ps = PROJECTS.filter(p => p.sm === name);
+    return { name, projects: ps, ...aggregate(ps) };
+  });
 }
+recomputeRollups();
+
+/* ---------- Achieved state (live, from the API) ----------
+   Achieved values are no longer entered in the browser; they come from
+   LIVE_ACHIEVED keyed by project name. getA/achievedFor read from it so all the
+   existing render code keeps working unchanged. */
+const FIELDS = ["units", "salesCr", "walkins", "selfGen", "alloc"];
+const getA = (proj, f) => Number((LIVE_ACHIEVED[proj] || {})[f]) || 0;
 function achievedFor(projects) {
   const o = { units: 0, salesCr: 0, walkins: 0, selfGen: 0, alloc: 0 };
   projects.forEach(p => FIELDS.forEach(f => { o[f] += getA(p.name, f); }));
@@ -264,7 +279,7 @@ function renderSMCards() {
 function renderProjectCards() {
   $("projCards").innerHTML = PROJECTS.map((p, i) => cardHTML({
     id: p.name, title: p.name, sub: "SM: " + p.sm + " · Ticket ₹" + cr(p.ticket) + " Cr",
-    badge: "Project", tint: SM_ORDER.indexOf(p.sm) % 4, t: p, a: achievedFor([p]), editable: true, channels: true
+    badge: "Project", tint: SM_ORDER.indexOf(p.sm) % 4, t: p, a: achievedFor([p]), editable: false, channels: true
   })).join("");
 }
 
@@ -291,7 +306,7 @@ function renderKPIs() {
     k("Sales value target", "₹" + cr(TOTAL.sales) + " Cr", `Achieved: ₹${fmt1(a.salesCr)} Cr`),
     k("Revenue target @ 2%", "₹" + cr(TOTAL.revenue) + " Cr", `Achieved: ₹${fmt1(a.revenueCr)} Cr`),
     k("Walk-ins target", inr(TOTAL.walkins), `Achieved: ${fmt1(a.walkins)}`),
-    k("Qualified leads required", inr(TOTAL.qualified), "Across 8 locations")
+    k("Qualified leads required", inr(TOTAL.qualified), "Across " + PROJECTS.length + " locations")
   ].join("");
 }
 
@@ -357,28 +372,106 @@ function renderAll() {
   renderSMCards();
   renderProjectCards();
 }
-renderAll();
-$("projTable").innerHTML = projectTable();
-$("s1Table").innerHTML = sheet1Table();
-$("assumeTable").innerHTML = assumptionsTable();
-$("smTable").innerHTML = smTable();
-
-$("projCards").addEventListener("input", e => {
-  const el = e.target;
-  if (!el.matches("input[data-proj]")) return;
-  const v = Math.max(0, parseFloat(el.value) || 0);
-  setA(el.dataset.proj, el.dataset.field, v);
-  updateProjectCard(el.dataset.proj);
-  renderKPIs();
-  renderSMCards();
-});
-
-$("resetBtn").addEventListener("click", () => {
-  if (!confirm("Clear all achieved values saved in this browser?")) return;
-  achieved = {};
-  try { localStorage.removeItem(STORE_KEY); } catch (e) { /* ignore */ }
+/* Re-render everything (cards + all tables). Call after PROJECTS changes. */
+function renderEverything() {
+  recomputeRollups();
   renderAll();
-});
+  $("projTable").innerHTML = projectTable();
+  $("s1Table").innerHTML = sheet1Table();
+  $("assumeTable").innerHTML = assumptionsTable();
+  $("smTable").innerHTML = smTable();
+}
+renderEverything();
+
+/* ---------- Live data loader ---------- */
+const API_STORE_KEY = "lighthouse_mvt_api_v1";
+(function restoreApiConfig() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(API_STORE_KEY)) || {};
+    if (saved.base) $("apiBase").value = saved.base;
+    if (saved.token) $("apiToken").value = saved.token;
+  } catch (e) { /* ignore */ }
+})();
+
+function setStatus(msg, kind) {
+  const el = $("apiStatus");
+  el.textContent = msg;
+  el.style.color = kind === "err" ? "var(--accent-dark)" : kind === "ok" ? "var(--ok)" : "var(--muted)";
+}
+
+/* Map one API project row into the shape the renderers expect. */
+function mapApiProject(row) {
+  const t = row.targets || {}, a = row.achieved || {};
+  return {
+    name: row.project_name || "(unnamed)",
+    sm: row.sales_head_name || "Unassigned",
+    units: Number(t.units) || 0,
+    ticket: Number(t.ticket_size) || 0,
+    walkins: Number(t.walkins) || 0,
+    selfGen: Number(t.self_gen_leads) || 0,
+    alloc: Number(t.allocated_leads) || 0,
+    qualified: Number(t.qualified) || 0,
+    wa: Number(t.whatsapp) || 0,
+    convo: Number(t.convoai) || 0,
+    digital: Number(t.digital) || 0,
+    meta: Number(t.meta) || 0,
+    web: Number(t.website) || 0,
+    sales: Number(t.sales_value) || 0,
+    revenue: Number(t.revenue) || 0,
+    _achieved: {
+      units: Number(a.units) || 0,
+      salesCr: (Number(a.sales_value) || 0) / CR,
+      walkins: Number(a.walkins) || 0,
+      selfGen: 0,
+      alloc: 0,
+    },
+  };
+}
+
+async function loadLive() {
+  const base = $("apiBase").value.trim().replace(/\/+$/, "");
+  const token = $("apiToken").value.trim();
+  if (!base) { setStatus("Enter the API base URL first.", "err"); return; }
+  try { localStorage.setItem(API_STORE_KEY, JSON.stringify({ base, token })); } catch (e) { /* ignore */ }
+
+  setStatus("Loading live data…");
+  try {
+    const res = await fetch(base + "/v1/retail/mvt-target/dashboard/overview", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "token": token,
+        "x-business": "retail",
+        "platform": "1",
+        "issuer": "website",
+        "os": "Web",
+        "pagename": "retailmvtprojecttarget",
+        "useraction": "viewright",
+      },
+      body: JSON.stringify({ filterduration: 9 }), // 9 = This Month
+    });
+    const json = await res.json();
+    if (!res.ok || json.status >= 400) {
+      throw new Error(json.message || ("HTTP " + res.status));
+    }
+    const data = json.data || {};
+    const rows = Array.isArray(data.projects) ? data.projects : [];
+    if (!rows.length) {
+      setStatus("API reached, but no MVT targets found for this period. Showing sample data.", "err");
+      return;
+    }
+    const mapped = rows.map(mapApiProject);
+    PROJECTS = mapped;
+    LIVE_ACHIEVED = {};
+    mapped.forEach(p => { LIVE_ACHIEVED[p.name] = p._achieved; });
+    renderEverything();
+    const label = (data.period && data.period.label) ? data.period.label : "current period";
+    setStatus("Live data loaded for " + label + " (" + rows.length + " projects).", "ok");
+  } catch (err) {
+    setStatus("Could not load live data: " + (err.message || err) + ". Showing sample data.", "err");
+  }
+}
+$("loadBtn").addEventListener("click", loadLive);
 
 /* Tabs with arrow-key navigation */
 const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
